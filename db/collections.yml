@@ -2,7 +2,6 @@
 - name: Drum & Bass
   urls:
   - http://feed.pfradio.com/pfr
-  - http://www.liquiddnb.com/podcast.xml
   - http://pietheyb.home.xs4all.nl/podcast/podcast.xml
   - http://podcast.breakbeat.co.uk/
   - http://feeds.feedburner.com/SubSwaraPodcast
@@ -21,13 +20,9 @@
   - http://feeds.feedburner.com/trancemixdotorg
   - http://peakrecords.podomatic.com/rss2.xml
   - http://maximumprogression.podomatic.com/rss2.xml
-  - http://feeds.feedburner.com/ds-podcast
   - http://www.galexmusic.com/podcast/gareth.xml
-  - http://heavens-trance.com/feed/podcast
   - http://www.bjornakesson.com/thresholdpodcast.xml
-  - http://feeds.feedburner.com/AndyMoorMoormusic
   - http://musicforprogramming.net/rss.php
-  - http://djcoleman.net/feed/
   - http://djaramis.podOmatic.com/rss2.xml
   - http://www.steveandersonmusic.com/podcasts/steveandersonpodcast.xml
   - http://www.marksherry.net/outburst_radio/outburst_radioshow_podcast.xml
@@ -39,16 +34,13 @@
   - http://www.lange-music.com/ICpodcast/intercity.xml
   - http://www.bia2.com/masoud/podcast.xml
   - http://www.nocturnalradio.org/podcast/nocturnal.xml
-  - http://www.tritonalmusic.com/podcast.xml
   - http://usatrancemovement.com/home/category/media/ustm-radio/feed/
   - http://feeds.feedburner.com/SupertabRadioPodcast
   - http://www.djinsomniacmusic.com/podcasts/podcast.xml
-  - http://www.rushhourradio.net/christopherlawrence_rushhour/Podcast/rss.xml
   - http://podcast.manuellesaux.com/feed.xml
   - http://djadamk.com/radio/akhb.xml
   - http://www.mondorecords.com/podcast/mondosessions_podcast_rss.xml
   - http://www.sandervandoorn.com/SVD%20Podcast/podcasts/SvDIDENTITYPODCAST-itunesnew.xml
-  - http://www.tytaniumsessions.com/podcast/podcast.xml
   - http://deepspacerecords.podomatic.com/rss2.xml
   - http://podcast.tranceinfrance.com/1-Trance%20in%20France%20Show/podcast.xml
 - name: Techno

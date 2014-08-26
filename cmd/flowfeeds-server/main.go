@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 
@@ -159,12 +160,22 @@ func FeaturedsIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type FeedsSerializer struct {
-	Feeds []models.Feed
+	Feeds []FeedSerializer
+}
+
+type FeedSerializer struct {
+	Id          int64
+	Title       string
+	Description string
+	Url         string
+	Thumb       string
+	Cover       string
+	Updated     time.Time
 }
 
 func FeedsIndexHandler(w http.ResponseWriter, r *http.Request) {
 	p := FeedsSerializer{}
-	p.Feeds = make([]models.Feed, 0)
+	p.Feeds = make([]FeedSerializer, 0)
 
 	feeds, err := models.Feeds()
 	if err != nil {
@@ -174,14 +185,20 @@ func FeedsIndexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, feed := range feeds {
-		feed.Image = fmt.Sprintf("https://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", feed.Id)
-		p.Feeds = append(p.Feeds, feed)
+		p.Feeds = append(p.Feeds, FeedSerializer{
+			Id:          feed.Id,
+			Title:       feed.Title,
+			Description: feed.Description,
+			Url:         feed.Url,
+			Thumb:       fmt.Sprintf("https://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb.jpg", feed.Id),
+			Cover:       fmt.Sprintf("https://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", feed.Id),
+		})
 	}
 
 	writeJSON(w, p)
 }
 
-type FeedSerializer struct {
+type FeedShowSerializer struct {
 	Feed models.Feed
 }
 
@@ -196,7 +213,7 @@ func FeedShowHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	serializer := FeedSerializer{}
+	serializer := FeedShowSerializer{}
 	serializer.Feed = feed
 	writeJSON(w, serializer)
 }

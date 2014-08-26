@@ -119,7 +119,7 @@ func makeImages(feed models.Feed) error {
 		return err
 	}
 
-	key := fmt.Sprintf("/feeds/%d/thumbnail.jpg", feed.Id)
+	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)
 	err = bucket.PutReader(key, thumbnail, stat.Size(), "image/jpeg", s3.PublicRead)
 	if err != nil {
 		return err
@@ -183,7 +183,7 @@ func startUpdateFromCollectionsYml() {
 func readCollectionsYml() []Collection {
 	collections := make([]Collection, 0)
 
-	data, err := ioutil.ReadFile("db/collections.yml")
+	data, err := ioutil.ReadFile("src/db/collections.yml")
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
