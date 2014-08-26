@@ -42,7 +42,7 @@ func main() {
 	}
 	defer models.Close()
 
-	startUpdateFromCollectionsYml()
+	startUpdateFromCollectionsYml("db/collections.yml")
 	makeImagesFromFeeds()
 }
 
@@ -162,10 +162,10 @@ func worker(id int, urls <-chan string) {
 	}
 }
 
-func startUpdateFromCollectionsYml() {
+func startUpdateFromCollectionsYml(yml string) {
 	var wg sync.WaitGroup
 
-	for _, c := range readCollectionsYml() {
+	for _, c := range readCollectionsYml(yml) {
 		for _, url := range c.Urls {
 			wg.Add(1)
 			go func(url string) {
@@ -180,10 +180,10 @@ func startUpdateFromCollectionsYml() {
 	wg.Wait()
 }
 
-func readCollectionsYml() []Collection {
+func readCollectionsYml(yml string) []Collection {
 	collections := make([]Collection, 0)
 
-	data, err := ioutil.ReadFile("src/db/collections.yml")
+	data, err := ioutil.ReadFile(yml)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
