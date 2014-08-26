@@ -70,17 +70,15 @@ func makeImagesFromFeeds() {
 }
 
 func makeImages(feed models.Feed) error {
-	imagePath := fmt.Sprintf("/tmp/feed-%d", feed.Id)
-	thumbnailPath := imagePath + ".thumbnail.jpg"
-	coverPath := imagePath + ".cover.jpg"
-
 	if feed.Image == "" {
 		return errors.New(fmt.Sprintf("No image for %s", feed.Url))
 	}
 
-	auth := aws.Auth{os.Getenv("S3_KEY"), os.Getenv("S3_SEC"), ""}
-	sss := s3.New(auth, aws.USEast)
-	bucket := sss.Bucket("flowfeeds2")
+	image, err := ioutil.TempFile("/tmp", fmt.Sprintf("feed-%d-", feed.Id))
+	if err != nil {
+		return err
+	}
+	defer image.Close()
 
 	log.Printf("getting %s", feed.Image)
 	resp, err := http.Get(feed.Image)
@@ -89,65 +87,67 @@ func makeImages(feed models.Feed) error {
 	}
 	defer resp.Body.Close()
 
-	output, err := os.Create(imagePath)
+	_, err = io.Copy(image, resp.Body)
 	if err != nil {
 		return err
 	}
-	defer output.Close()
-
-	_, err = io.Copy(output, resp.Body)
-	if err != nil {
-		return err
-	}
+	image.Close()
 	log.Printf("got %s", feed.Image)
 
+	auth := aws.Auth{os.Getenv("S3_KEY"), os.Getenv("S3_SEC"), ""}
+	sss := s3.New(auth, aws.USEast)
+	bucket := sss.Bucket("flowfeeds2")
+
 	/// THUMBNAILS
-	out, err := exec.Command("convert", imagePath, "-thumbnail", "300x300^", "-gravity", "center", "-extent", "300x300", thumbnailPath).Output()
-	if err != nil {
-		log.Println(out)
-		return err
-	}
-
-	thumbnail, err := os.Open(thumbnailPath)
-	if err != nil {
-		return err
-	}
-	defer thumbnail.Close()
-
-	stat, err := thumbnail.Stat()
-	if err != nil {
-		return err
-	}
-
 	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)
-	err = bucket.PutReader(key, thumbnail, stat.Size(), "image/jpeg", s3.PublicRead)
+	err = processImage(image.Name(), "300x300", key, bucket)
 	if err != nil {
+		os.Remove(image.Name())
 		return err
 	}
 
 	// COVER
-	out, err = exec.Command("convert", imagePath, "-thumbnail", "360x270^", "-gravity", "center", "-extent", "360x270", coverPath).Output()
+	key = fmt.Sprintf("/feeds/%d/cover.jpg", feed.Id)
+	err = processImage(image.Name(), "600x600", key, bucket)
+	if err != nil {
+		os.Remove(image.Name())
+		return err
+	}
+
+	os.Remove(image.Name())
+	return nil
+}
+
+func processImage(input string, size string, key string, bucket *s3.Bucket) error {
+	output, err := ioutil.TempFile("/tmp", "process-image-")
+	if err != nil {
+		return err
+	}
+	output.Close()
+
+	out, err := exec.Command("convert", input, "-thumbnail", size+"^", "-gravity", "center", "-extent", size, output.Name()).Output()
 	if err != nil {
 		log.Println(out)
 		return err
 	}
 
-	cover, err := os.Open(coverPath)
+	image, err := os.Open(output.Name())
 	if err != nil {
 		return err
 	}
-	defer cover.Close()
+	defer image.Close()
 
-	stat, err = cover.Stat()
+	stat, err := image.Stat()
 	if err != nil {
 		return err
 	}
 
-	key = fmt.Sprintf("/feeds/%d/cover.jpg", feed.Id)
-	err = bucket.PutReader(key, cover, stat.Size(), "image/jpeg", s3.PublicRead)
+	err = bucket.PutReader(key, image, stat.Size(), "image/jpeg", s3.PublicRead)
 	if err != nil {
 		return err
 	}
+
+	os.Remove(output.Name())
 
 	return nil
 }
