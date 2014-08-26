@@ -133,7 +133,7 @@ func FindEpisodeById(id int64) (Episode, error) {
 
 func Feeds() ([]Feed, error) {
 	feeds := []Feed{}
-	err := x.Find(&feeds)
+	err := x.OrderBy("lower(title) asc").Find(&feeds)
 	return feeds, err
 }
 

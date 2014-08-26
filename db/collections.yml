@@ -52,5 +52,4 @@
 - name: House
   urls:
   - http://feeds.feedburner.com/PhilDahouseCat
-  - http://housemusicpodcasts.co.uk/feed/
   - http://www.dogglounge.com/feed/podcast

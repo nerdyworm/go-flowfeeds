@@ -47,7 +47,7 @@ func (i Item) Published() time.Time {
 }
 
 func (f Feed) Title() string {
-	return f.Channel.Title
+	return strings.TrimSpace(f.Channel.Title)
 }
 
 func (f Feed) Description() string {

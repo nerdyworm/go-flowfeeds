@@ -190,8 +190,8 @@ func FeedsIndexHandler(w http.ResponseWriter, r *http.Request) {
 			Title:       feed.Title,
 			Description: feed.Description,
 			Url:         feed.Url,
-			Thumb:       fmt.Sprintf("https://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb.jpg", feed.Id),
-			Cover:       fmt.Sprintf("https://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", feed.Id),
+			Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb.jpg", feed.Id),
+			Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", feed.Id),
 		})
 	}
 
