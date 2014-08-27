@@ -1,0 +1,17 @@
+{
+    "paths": [
+        "."
+    ],
+    "depth": 5,
+    "exclude": [],
+    "include": ["\\.(go)$"],
+    "command": [
+        "bash", "-c", "go install ./... && go-flowfeeds server"
+    ],
+    "env": {
+        "POWERD_BY": "github.com/codeskyblue/fswatch"
+    },
+    "autorestart": false,
+    "restart-interval": 0,
+    "kill-signal": "KILL"
+}

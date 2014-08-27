@@ -1,4 +1,4 @@
-package main
+package updates
 
 import (
 	"errors"
@@ -35,14 +35,8 @@ func imageWorker(id int, feeds <-chan models.Feed, results chan<- int) {
 	}
 }
 
-func main() {
-	err := models.Connect("dbname=flowfeeds2 sslmode=disable")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer models.Close()
-
-	startUpdateFromCollectionsYml("db/collections.yml")
+func Run(collection string) {
+	startUpdateFromCollectionsYml(collection)
 	makeImagesFromFeeds()
 }
 
