@@ -10,8 +10,6 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-var ()
-
 func main() {
 	err := models.Connect("dbname=flowfeeds2 sslmode=disable")
 	if err != nil {
@@ -21,15 +19,14 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "Flowfeeds"
-	app.Usage = "Flowfeeds Service"
+	app.Usage = "http server and utils"
+	app.Author = "Benjamin Silas Rhodes"
+	app.Email = "ben@nerdyworm.com"
 	app.Version = "0.0.1"
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:        "update",
 			Description: "This command will update all the rss feeds",
-			Action: func(c *cli.Context) {
-				updates.Run(c.String("file"))
-			},
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "file",
@@ -37,21 +34,24 @@ func main() {
 					Usage: "rss feeds collection file",
 				},
 			},
+			Action: func(c *cli.Context) {
+				updates.Run(c.String("file"))
+			},
 		},
 		cli.Command{
 			Name:        "server",
 			Description: "This command will start the http server",
-			Action: func(c *cli.Context) {
-				web.Run(web.ServerOptions{
-					c.String("ember"),
-				})
-			},
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:   "ember",
 					Usage:  "tells the http server where it can find the index.html file",
 					EnvVar: "EMBER_APP_PATH",
 				},
+			},
+			Action: func(c *cli.Context) {
+				web.Run(web.ServerOptions{
+					c.String("ember"),
+				})
 			},
 		},
 	}
