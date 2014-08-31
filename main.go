@@ -30,7 +30,7 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "file",
-					Value: "db/collections.yml",
+					Value: "db/collections.json",
 					Usage: "rss feeds collection file",
 				},
 			},

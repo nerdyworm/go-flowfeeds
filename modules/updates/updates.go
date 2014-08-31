@@ -1,6 +1,7 @@
 package updates
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/s3"
-	"gopkg.in/yaml.v1"
 )
 
 type Collection struct {
@@ -36,7 +36,7 @@ func imageWorker(id int, feeds <-chan models.Feed, results chan<- int) {
 }
 
 func Run(collection string) {
-	startUpdateFromCollectionsYml(collection)
+	startUpdateFromCollections(collection)
 	makeImagesFromFeeds()
 }
 
@@ -163,10 +163,10 @@ func worker(id int, urls <-chan string) {
 	}
 }
 
-func startUpdateFromCollectionsYml(yml string) {
+func startUpdateFromCollections(jsonFile string) {
 	var wg sync.WaitGroup
 
-	for _, c := range readCollectionsYml(yml) {
+	for _, c := range readCollections(jsonFile) {
 		for _, url := range c.Urls {
 			wg.Add(1)
 			go func(url string) {
@@ -181,15 +181,15 @@ func startUpdateFromCollectionsYml(yml string) {
 	wg.Wait()
 }
 
-func readCollectionsYml(yml string) []Collection {
+func readCollections(jsonFile string) []Collection {
 	collections := make([]Collection, 0)
 
-	data, err := ioutil.ReadFile(yml)
+	data, err := ioutil.ReadFile(jsonFile)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	err = yaml.Unmarshal(data, &collections)
+	err = json.Unmarshal(data, &collections)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
