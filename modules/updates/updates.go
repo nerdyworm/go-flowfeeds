@@ -88,7 +88,7 @@ func makeImages(feed models.Feed) error {
 	image.Close()
 	log.Printf("got %s", feed.Image)
 
-	auth := aws.Auth{os.Getenv("S3_KEY"), os.Getenv("S3_SEC"), ""}
+	auth := aws.Auth{os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), ""}
 	sss := s3.New(auth, aws.USEast)
 	bucket := sss.Bucket("flowfeeds2")
 
