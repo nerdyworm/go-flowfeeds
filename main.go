@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	err := models.Connect("dbname=flowfeeds2 sslmode=disable")
+	err := models.Connect("dbname=flowfeeds2 user=flowfeeds2 sslmode=disable")
 	if err != nil {
 		log.Fatalln(err)
 	}
