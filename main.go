@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	err := models.Connect("dbname=flowfeeds2 user=flowfeeds2 sslmode=disable")
+	pgConfig := os.Getenv("DATABASE_CONFIG")
+	err := models.Connect(pgConfig)
 	if err != nil {
 		log.Fatalln(err)
 	}
