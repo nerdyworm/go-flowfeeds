@@ -13,7 +13,7 @@ import (
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	serializer := serializers.FeedsSerializer{}
-	serializer.Feeds = make([]serializers.FeedSerializer, 0)
+	serializer.Feeds = make([]serializers.Feed, 0)
 
 	feeds, err := models.Feeds()
 	if err != nil {
@@ -23,7 +23,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, feed := range feeds {
-		serializer.Feeds = append(serializer.Feeds, serializers.FeedSerializer{
+		serializer.Feeds = append(serializer.Feeds, serializers.Feed{
 			Id:          feed.Id,
 			Title:       feed.Title,
 			Description: feed.Description,

@@ -2,6 +2,7 @@ package serializers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -21,16 +22,31 @@ type EpisodeSerializer struct {
 	Comments []models.Comment
 }
 
+type Teaser struct {
+	Id          int64
+	Feed        int64
+	Episode     int64
+	Title       string
+	Description string
+	Url         string
+	Thumb       string
+	Cover       string
+	Published   time.Time
+	PlaysCount  int
+	LovesCount  int
+}
+
 type FeaturedsSerializer struct {
 	Featureds []models.Featured
-	Teasers   []models.Teaser
+	Teasers   []Teaser
+	Feeds     []Feed
 }
 
 type FeedsSerializer struct {
-	Feeds []FeedSerializer
+	Feeds []Feed
 }
 
-type FeedSerializer struct {
+type Feed struct {
 	Id          int64
 	Title       string
 	Description string
@@ -55,4 +71,17 @@ func JSON(w http.ResponseWriter, v interface{}) error {
 	w.Header().Set("content-type", "application/json; charset=utf-8")
 	_, err = w.Write(data)
 	return err
+}
+
+func NewTeaser(teaser models.Teaser) Teaser {
+	return Teaser{
+		Id:          teaser.Id,
+		Feed:        teaser.FeedId,
+		Episode:     teaser.Episode,
+		Title:       teaser.Title,
+		Description: teaser.Description,
+		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb-x2.jpg", teaser.FeedId),
+		Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", teaser.FeedId),
+		Published:   teaser.Published,
+	}
 }

@@ -10,6 +10,7 @@ create unique index feeds_url_unique on feed using btree(url);
 
 create table episode (
   id bigserial not null primary key,
+  feed_id bigint references feed(id) not null,
   guid text not null,
   title text not null,
   description text not null,

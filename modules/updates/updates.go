@@ -94,7 +94,14 @@ func makeImages(feed models.Feed) error {
 
 	/// THUMBNAILS
 	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)
-	err = processImage(image.Name(), "300x300", key, bucket)
+	err = processImage(image.Name(), "280x280", key, bucket)
+	if err != nil {
+		os.Remove(image.Name())
+		return err
+	}
+
+	key = fmt.Sprintf("/feeds/%d/thumb-x2.jpg", feed.Id)
+	err = processImage(image.Name(), "560x560", key, bucket)
 	if err != nil {
 		os.Remove(image.Name())
 		return err
@@ -217,6 +224,7 @@ func updateUrl(url string) error {
 
 	for _, item := range rssFeed.Items() {
 		episode := models.Episode{
+			FeedId:      feed.Id,
 			Guid:        item.Guid,
 			Title:       item.Title,
 			Description: item.Description,

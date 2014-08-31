@@ -25,6 +25,7 @@ func Close() {
 
 type Episode struct {
 	Id          int64
+	FeedId      int64
 	Guid        string
 	Title       string
 	Description string
@@ -51,6 +52,8 @@ type Teaser struct {
 	Description string
 	Url         string
 	Image       string
+	FeedId      int64
+	Published   time.Time
 }
 
 func (e Episode) Teaser() Teaser {
@@ -61,6 +64,8 @@ func (e Episode) Teaser() Teaser {
 		Description: e.Description,
 		Url:         e.Url,
 		Image:       e.Image,
+		FeedId:      e.FeedId,
+		Published:   e.Published,
 	}
 }
 
@@ -109,20 +114,25 @@ func isDupeErrorOf(err error, indexName string) bool {
 	return false
 }
 
-func FeaturedEpisodeTeasers() ([]Teaser, error) {
+func FeaturedEpisodeTeasers() ([]Teaser, []Feed, error) {
 	episodes := []Episode{}
+	feeds := []Feed{}
 
 	err := x.OrderBy("published desc").Limit(50, 0).Find(&episodes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	feedIds := []int64{}
 	teasers := make([]Teaser, len(episodes))
 	for i, episode := range episodes {
 		teasers[i] = episode.Teaser()
+		feedIds = append(feedIds, episode.FeedId)
 	}
 
-	return teasers, nil
+	err = x.In("id", feedIds).Find(&feeds)
+
+	return teasers, feeds, err
 }
 
 func FindEpisodeById(id int64) (Episode, error) {
