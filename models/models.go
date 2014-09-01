@@ -152,3 +152,9 @@ func FindFeedById(id int64) (Feed, error) {
 	_, err := x.Id(id).Get(&feed)
 	return feed, err
 }
+
+func FindFeedByURL(url string) (Feed, error) {
+	feed := Feed{}
+	_, err := x.Where("url=?", url).Get(&feed)
+	return feed, err
+}

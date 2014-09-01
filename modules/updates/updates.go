@@ -222,6 +222,11 @@ func updateUrl(url string) error {
 		log.Fatal(err)
 	}
 
+	feed, err = models.FindFeedByURL(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, item := range rssFeed.Items() {
 		episode := models.Episode{
 			FeedId:      feed.Id,

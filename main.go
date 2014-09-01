@@ -12,6 +12,7 @@ import (
 
 func main() {
 	pgConfig := os.Getenv("DATABASE_CONFIG")
+
 	err := models.Connect(pgConfig)
 	if err != nil {
 		log.Fatalln(err)
