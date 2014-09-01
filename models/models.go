@@ -118,7 +118,7 @@ func FeaturedEpisodeTeasers() ([]Teaser, []Feed, error) {
 	episodes := []Episode{}
 	feeds := []Feed{}
 
-	err := x.OrderBy("published desc").Limit(20, 0).Find(&episodes)
+	err := x.OrderBy("published desc").Limit(5, 0).Find(&episodes)
 	if err != nil {
 		return nil, nil, err
 	}
