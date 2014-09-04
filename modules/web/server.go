@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/featured"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/users"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -43,6 +44,7 @@ func Run(options ServerOptions) {
 	apiRouter.HandleFunc("/featureds", featured.Index).Methods("GET")
 	apiRouter.HandleFunc("/feeds", feeds.Index).Methods("GET")
 	apiRouter.HandleFunc("/feeds/{id}", feeds.Show).Methods("GET")
+	apiRouter.HandleFunc("/users", users.Create).Methods("POST")
 	http.Handle("/", r)
 
 	log.Printf("Starting server...\n")

@@ -20,3 +20,11 @@ create table episode (
 );
 
 create unique index episodes_guid_unique on episode using btree(guid);
+
+create table users (
+  id bigserial not null primary key,
+  email text not null,
+  encrypted_password text not null
+);
+
+create unique index user_email_unique on users using btree(email);

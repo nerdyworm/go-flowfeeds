@@ -56,6 +56,16 @@ type Feed struct {
 	Updated     time.Time
 }
 
+type User struct {
+	Id     int64
+	Email  string
+	Avatar string
+}
+
+type ShowUser struct {
+	User User
+}
+
 type FeedShowSerializer struct {
 	Feed models.Feed
 }
