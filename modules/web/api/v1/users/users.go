@@ -7,6 +7,7 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
 )
 
 type CreateUserRequest struct {
@@ -16,18 +17,9 @@ type CreateUserRequest struct {
 	}
 }
 
-func Create(w http.ResponseWriter, r *http.Request) {
-	log.Println("Hello create")
-
-	createUserRequest := CreateUserRequest{}
-	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
-	if err != nil {
-		log.Println("users.Create", err)
-		return
-	}
-
+func (r CreateUserRequest) Validate() (models.ValidationErrors, error) {
 	validationErrors := models.NewValidationErrors()
-	params := createUserRequest.User
+	params := r.User
 
 	if params.Email == "" {
 		validationErrors.Add("Email", "can't be blank")
@@ -35,7 +27,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		exists, err := models.UserExistsWithEmail(params.Email)
 		if err != nil {
 			log.Println("users.Create models.UserExistsWithEmail", err)
-			return
+			return validationErrors, err
 		}
 
 		if exists {
@@ -47,16 +39,32 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		validationErrors.Add("Password", "can't be blank")
 	}
 
-	if validationErrors.Any() {
-		w.WriteHeader(422)
-		serializers.JSON(w, validationErrors)
-		return
+	return validationErrors, nil
+}
+
+func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	createUserRequest := CreateUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
+	if err != nil {
+		log.Println("users.Create", err)
+		return err
 	}
+
+	errors, err := createUserRequest.Validate()
+	if err != nil {
+		return err
+	}
+
+	if errors.Any() {
+		return errors
+	}
+
+	params := createUserRequest.User
 
 	user, err := models.CreateUser(params.Email, params.Password)
 	if err != nil {
 		log.Println("users.Create models.UserCreate", err)
-		return
+		return err
 	}
 
 	serializer := serializers.ShowUser{
@@ -68,4 +76,5 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	serializers.JSON(w, serializer)
+	return nil
 }

@@ -7,10 +7,11 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
 	"github.com/gorilla/mux"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	p := serializers.EpisodesSerializer{}
 	p.Episodes = make([]models.Episode, 0)
 
@@ -24,17 +25,18 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serializers.JSON(w, p)
+	return nil
 }
 
-func Show(w http.ResponseWriter, r *http.Request) {
+func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	episode, err := models.FindEpisodeById(int64(id))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	p := serializers.EpisodeSerializer{}
@@ -55,4 +57,5 @@ func Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serializers.JSON(w, p)
+	return nil
 }

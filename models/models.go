@@ -21,18 +21,12 @@ var (
 func Connect(config string) error {
 	var err error
 	x, err = xorm.NewEngine("postgres", config)
-	//x.ShowSQL = true
+	x.ShowSQL = true
 	return err
 }
 
 func Close() {
 	x.Close()
-}
-
-type User struct {
-	Id                int64
-	Email             string
-	EncryptedPassword []byte
 }
 
 type Episode struct {
@@ -142,7 +136,9 @@ func FeaturedEpisodeTeasers() ([]Teaser, []Feed, error) {
 		feedIds = append(feedIds, episode.FeedId)
 	}
 
-	err = x.In("id", feedIds).Find(&feeds)
+	if len(feedIds) > 0 {
+		err = x.In("id", feedIds).Find(&feeds)
+	}
 
 	return teasers, feeds, err
 }
@@ -169,38 +165,4 @@ func FindFeedByURL(url string) (Feed, error) {
 	feed := Feed{}
 	_, err := x.Where("url=?", url).Get(&feed)
 	return feed, err
-}
-
-const USER_EMAIL_EXISTS_QUERY = "select exists (select true from users where lower(email) = lower($1))"
-
-func UserExistsWithEmail(email string) (exists bool, err error) {
-	row := x.DB().QueryRow(USER_EMAIL_EXISTS_QUERY, email)
-	err = row.Scan(&exists)
-	return
-}
-
-func NewUser(email, password string) User {
-	user := User{Email: email}
-	user.SetPassword(password)
-	return user
-}
-
-func CreateUser(email string, password string) (User, error) {
-	user := NewUser(email, password)
-
-	row := x.DB().QueryRow("insert into users (email, encrypted_password) values($1,$2) returning id",
-		user.Email, user.EncryptedPassword)
-
-	err := row.Scan(&user.Id)
-
-	return user, err
-}
-
-func (user User) CheckPassword(password string) error {
-	return bcrypt.CompareHashAndPassword(user.EncryptedPassword, []byte(password))
-}
-
-func (user *User) SetPassword(password string) (err error) {
-	user.EncryptedPassword, err = bcrypt.GenerateFromPassword([]byte(password), PasswordCost)
-	return err
 }

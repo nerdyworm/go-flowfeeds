@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/helpers"
 )
 
 type EpisodesSerializer struct {
@@ -93,5 +94,13 @@ func NewTeaser(teaser models.Teaser) Teaser {
 		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb-x2.jpg", teaser.FeedId),
 		Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", teaser.FeedId),
 		Published:   teaser.Published,
+	}
+}
+
+func NewUser(user models.User) User {
+	return User{
+		Id:     user.Id,
+		Email:  user.Email,
+		Avatar: helpers.Gravatar(user.Email),
 	}
 }

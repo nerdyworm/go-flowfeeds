@@ -1,15 +1,20 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/featured"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/users"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -33,27 +38,53 @@ func Run(options ServerOptions) {
 	rootEmberIndexHtml = string(index)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
-	r.NotFoundHandler = http.HandlerFunc(HomeHandler)
+	r.HandleFunc("/", Default(HomeHandler))
+	r.NotFoundHandler = Default(HomeHandler)
 
 	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir(options.RootEmberAppPath)))
 
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
-	apiRouter.HandleFunc("/episodes", episodes.Index).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}", episodes.Show).Methods("GET")
-	apiRouter.HandleFunc("/featureds", featured.Index).Methods("GET")
-	apiRouter.HandleFunc("/feeds", feeds.Index).Methods("GET")
-	apiRouter.HandleFunc("/feeds/{id}", feeds.Show).Methods("GET")
-	apiRouter.HandleFunc("/users", users.Create).Methods("POST")
+	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.Show)).Methods("GET")
+	apiRouter.HandleFunc("/featureds", Default(featured.Index)).Methods("GET")
+	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")
+	apiRouter.HandleFunc("/feeds/{id}", Default(feeds.Show)).Methods("GET")
+	apiRouter.HandleFunc("/users", Default(users.Create)).Methods("POST")
+	apiRouter.HandleFunc("/sessions", Default(sessions.Create)).Methods("POST")
+	apiRouter.HandleFunc("/sessions", Default(sessions.Destroy)).Methods("DELETE")
 	http.Handle("/", r)
 
-	log.Printf("Starting server...\n")
+	log.Printf("Starting server on 3000\n")
 	if err := http.ListenAndServe(":3000", nil); err != nil {
 		panic(err)
 	}
 }
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
+type Manifest struct {
+	CurrentUser int64
+	Payload     struct {
+		User serializers.User
+	}
+}
+
+func HomeHandler(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "text/html")
-	fmt.Fprint(w, rootEmberIndexHtml)
+
+	html := rootEmberIndexHtml
+
+	if ctx.User.Id != 0 {
+		m := Manifest{CurrentUser: ctx.User.Id}
+		m.Payload.User = serializers.NewUser(ctx.User)
+
+		b, err := json.Marshal(m)
+		if err != nil {
+			return err
+		}
+
+		scripts := fmt.Sprintf("<script>window.FlowfeedsManifest = %s;</script>\n</head>", b)
+		html = strings.Replace(html, "</head>", scripts, 1)
+	}
+
+	fmt.Fprint(w, html)
+	return nil
 }

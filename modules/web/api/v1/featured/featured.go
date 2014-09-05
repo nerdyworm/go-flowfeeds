@@ -7,9 +7,10 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	serializer := serializers.FeaturedsSerializer{}
 	serializer.Featureds = make([]models.Featured, 0)
 	serializer.Teasers = make([]serializers.Teaser, 0)
@@ -17,9 +18,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	teasers, feeds, err := models.FeaturedEpisodeTeasers()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
-		return
+		log.Println("featued.Index models.FeaturedEpisodeTeasers", err)
+		return err
 	}
 
 	for i, teaser := range teasers {
@@ -39,4 +39,5 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serializers.JSON(w, serializer)
+	return nil
 }
