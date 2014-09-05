@@ -21,7 +21,7 @@ var (
 func Connect(config string) error {
 	var err error
 	x, err = xorm.NewEngine("postgres", config)
-	x.ShowSQL = true
+	//x.ShowSQL = true
 	return err
 }
 
