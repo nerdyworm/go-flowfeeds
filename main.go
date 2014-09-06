@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/updates"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web"
@@ -12,6 +13,10 @@ import (
 
 func main() {
 	pgConfig := os.Getenv("DATABASE_CONFIG")
+
+	if pgConfig == "" {
+		pgConfig = config.PgConfig
+	}
 
 	err := models.Connect(pgConfig)
 	if err != nil {
