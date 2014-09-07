@@ -166,3 +166,18 @@ func FindFeedByURL(url string) (Feed, error) {
 	_, err := x.Where("url=?", url).Get(&feed)
 	return feed, err
 }
+
+func FindRelatedTeasers(episode Episode) ([]Teaser, error) {
+	related := []Episode{}
+	err := x.OrderBy("random()").Limit(5).Find(&related)
+	if err != nil {
+		return nil, err
+	}
+
+	teasers := make([]Teaser, len(related))
+	for i := range related {
+		teasers[i] = related[i].Teaser()
+	}
+
+	return teasers, err
+}

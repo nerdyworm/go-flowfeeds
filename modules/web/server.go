@@ -44,8 +44,12 @@ func Run(options ServerOptions) {
 	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir(options.RootEmberAppPath)))
 
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
-	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}/favorites", Default(episodes.Favorites)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}/listens", Default(episodes.Listeners)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}/related", Default(episodes.Related)).Methods("GET")
 	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.Show)).Methods("GET")
+	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
+
 	apiRouter.HandleFunc("/featureds", Default(featured.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds/{id}", Default(feeds.Show)).Methods("GET")
