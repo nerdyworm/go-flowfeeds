@@ -11,6 +11,7 @@
   {
     "name": "Trance",
     "urls": [
+      "http://tom-yelland.herokuapp.com/feed.xml",
       "http://feeds.feedburner.com/lostworldshow",
       "http://sharamtayebi.podbean.com/feed/",
       "http://www.tatw.co.uk/podcast.xml",
