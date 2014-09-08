@@ -21,7 +21,7 @@ var (
 func Connect(config string) error {
 	var err error
 	x, err = xorm.NewEngine("postgres", config)
-	//x.ShowSQL = true
+	x.ShowSQL = true
 	return err
 }
 
@@ -40,10 +40,16 @@ type Episode struct {
 	Published   time.Time
 }
 
-type Comment struct {
-	Id       int64
-	Body     string
-	AuthorId int64
+type Listen struct {
+	Id        int64
+	UserId    int64
+	EpisodeId int64
+}
+
+type Favorite struct {
+	Id        int64
+	UserId    int64
+	EpisodeId int64
 }
 
 type Top100 struct {
@@ -124,7 +130,7 @@ func FeaturedEpisodeTeasers() ([]Teaser, []Feed, error) {
 	episodes := []Episode{}
 	feeds := []Feed{}
 
-	err := x.OrderBy("published desc").Limit(20, 0).Find(&episodes)
+	err := x.OrderBy("published desc").Limit(25, 0).Find(&episodes)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -167,9 +173,9 @@ func FindFeedByURL(url string) (Feed, error) {
 	return feed, err
 }
 
-func FindRelatedTeasers(episode Episode) ([]Teaser, error) {
+func FindRelatedTeasers(episodeId int64) ([]Teaser, error) {
 	related := []Episode{}
-	err := x.OrderBy("random()").Limit(5).Find(&related)
+	err := x.Where("id <> ?", episodeId).OrderBy("random()").Limit(5).Find(&related)
 	if err != nil {
 		return nil, err
 	}
@@ -180,4 +186,28 @@ func FindRelatedTeasers(episode Episode) ([]Teaser, error) {
 	}
 
 	return teasers, err
+}
+
+func CreateListen(user User, episodeId int64) (Listen, error) {
+	listen := Listen{UserId: user.Id, EpisodeId: episodeId}
+	_, err := x.Insert(&listen)
+	return listen, err
+}
+
+func FindListensForEpisode(id int64) ([]Listen, error) {
+	listens := []Listen{}
+	err := x.Where("episode_id = ?", id).Limit(8).Find(&listens)
+	return listens, err
+}
+
+func CreateFavorite(user User, episodeId int64) (Favorite, error) {
+	favorite := Favorite{UserId: user.Id, EpisodeId: episodeId}
+	_, err := x.Insert(&favorite)
+	return favorite, err
+}
+
+func FindFavoritesForEpisode(id int64) ([]Favorite, error) {
+	favorites := []Favorite{}
+	err := x.Where("episode_id = ?", id).Limit(8).Find(&favorites)
+	return favorites, err
 }

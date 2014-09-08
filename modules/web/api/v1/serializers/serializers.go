@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/helpers"
 )
@@ -50,8 +51,8 @@ func NewEpisode(episode models.Episode) Episode {
 		Title:       episode.Title,
 		Description: episode.Description,
 		Url:         episode.Url,
-		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb-x2.jpg", episode.FeedId),
-		Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", episode.FeedId),
+		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, episode.FeedId),
+		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, episode.FeedId),
 		Published:   episode.Published,
 		Links: EpisodeLinks{
 			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
@@ -144,8 +145,8 @@ func NewTeaser(teaser models.Teaser) Teaser {
 		Title:       teaser.Title,
 		Description: teaser.Description,
 		Url:         teaser.Url,
-		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb-x2.jpg", teaser.FeedId),
-		Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", teaser.FeedId),
+		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, teaser.FeedId),
+		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, teaser.FeedId),
 		Published:   teaser.Published,
 	}
 }
@@ -164,8 +165,70 @@ type Listen struct {
 	Episode int64
 }
 
+type Listens struct {
+	Listens []Listen
+}
+
+type ShowListen struct {
+	Listen Listen
+}
+
+func NewListen(listen models.Listen) Listen {
+	return Listen{
+		Id:      listen.Id,
+		User:    listen.UserId,
+		Episode: listen.EpisodeId,
+	}
+}
+
+func NewShowListen(listen models.Listen) ShowListen {
+	return ShowListen{NewListen(listen)}
+}
+
+func NewListens(listens []models.Listen) Listens {
+	serializer := Listens{}
+	serializer.Listens = make([]Listen, len(listens))
+
+	for i, listen := range listens {
+		serializer.Listens[i] = NewListen(listen)
+	}
+
+	return serializer
+}
+
 type Favorite struct {
 	Id      int64
 	User    int64
 	Episode int64
+}
+
+type Favorites struct {
+	Favorites []Favorite
+}
+
+type ShowFavorite struct {
+	Favorite Favorite
+}
+
+func NewFavorite(favorite models.Favorite) Favorite {
+	return Favorite{
+		Id:      favorite.Id,
+		User:    favorite.UserId,
+		Episode: favorite.EpisodeId,
+	}
+}
+
+func NewShowFavorite(favorite models.Favorite) ShowFavorite {
+	return ShowFavorite{NewFavorite(favorite)}
+}
+
+func NewFavorites(favorites []models.Favorite) Favorites {
+	serializer := Favorites{}
+	serializer.Favorites = make([]Favorite, len(favorites))
+
+	for i, favorite := range favorites {
+		serializer.Favorites[i] = NewFavorite(favorite)
+	}
+
+	return serializer
 }

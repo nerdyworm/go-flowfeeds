@@ -43,11 +43,33 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func Listeners(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+func Listens(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	listens, err := models.FindListensForEpisode(int64(id))
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewListens(listens))
 	return nil
 }
 
 func Favorites(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	listens, err := models.FindFavoritesForEpisode(int64(id))
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewFavorites(listens))
 	return nil
 }
 
@@ -57,12 +79,7 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	episode, err := models.FindEpisodeById(int64(id))
-	if err != nil {
-		return err
-	}
-
-	related, err := models.FindRelatedTeasers(episode)
+	related, err := models.FindRelatedTeasers(int64(id))
 	if err != nil {
 		return err
 	}

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/rss"
 
@@ -90,7 +91,7 @@ func makeImages(feed models.Feed) error {
 
 	auth := aws.Auth{os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), ""}
 	sss := s3.New(auth, aws.USEast)
-	bucket := sss.Bucket("flowfeeds2")
+	bucket := sss.Bucket(config.S3Bucket)
 
 	/// THUMBNAILS
 	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)

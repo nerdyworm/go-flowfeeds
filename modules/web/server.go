@@ -9,8 +9,10 @@ import (
 	"strings"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/favorites"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/featured"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/listens"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/users"
@@ -45,10 +47,13 @@ func Run(options ServerOptions) {
 
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
 	apiRouter.HandleFunc("/episodes/{id}/favorites", Default(episodes.Favorites)).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}/listens", Default(episodes.Listeners)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}/listens", Default(episodes.Listens)).Methods("GET")
 	apiRouter.HandleFunc("/episodes/{id}/related", Default(episodes.Related)).Methods("GET")
 	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.Show)).Methods("GET")
 	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
+
+	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")
+	apiRouter.HandleFunc("/favorites", Default(favorites.Create)).Methods("POST")
 
 	apiRouter.HandleFunc("/featureds", Default(featured.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")

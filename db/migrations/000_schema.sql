@@ -28,3 +28,17 @@ create table users (
 );
 
 create unique index user_email_unique on users using btree(email);
+
+create table listen (
+  id bigserial not null primary key,
+  user_id bigint references users(id) not null,
+  episode_id bigint references episode(id) not null
+);
+create index index_listen_episode_id on listen using btree(episode_id);
+
+create table favorite (
+  id bigserial not null primary key,
+  user_id bigint references users(id) not null,
+  episode_id bigint references episode(id) not null
+);
+create index index_favorite_episode_id on favorite using btree(episode_id);
