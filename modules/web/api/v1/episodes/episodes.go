@@ -2,6 +2,7 @@ package episodes
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -85,5 +86,26 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	}
 
 	serializers.JSON(w, serializers.NewTeasers(related))
+	return nil
+}
+
+func ToggleFavoriteEpisode(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	w.WriteHeader(http.StatusNoContent)
+
+	if ctx.User.Id == 0 {
+		return nil
+	}
+
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	err = models.ToggleFavorite(ctx.User, int64(id))
+	if err != nil {
+		log.Println("listens.Create models.CreateFavorite", err)
+		return err
+	}
+
 	return nil
 }

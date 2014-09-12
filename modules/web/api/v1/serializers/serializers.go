@@ -31,6 +31,7 @@ type Episode struct {
 	Published   time.Time
 	PlaysCount  int
 	LovesCount  int
+	Favorited   bool
 	Links       EpisodeLinks `json:"links"`
 }
 
@@ -74,6 +75,7 @@ type Teaser struct {
 	Published   time.Time
 	PlaysCount  int
 	LovesCount  int
+	Favorited   bool
 }
 
 type FeaturedsSerializer struct {

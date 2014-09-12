@@ -200,6 +200,19 @@ func FindListensForEpisode(id int64) ([]Listen, error) {
 	return listens, err
 }
 
+func ToggleFavorite(user User, episodeId int64) error {
+	favorite := Favorite{UserId: user.Id, EpisodeId: episodeId}
+	_, err := x.Where("user_id = ? and episode_id = ?", user.Id, episodeId).Get(&favorite)
+
+	if favorite.Id == 0 {
+		_, err = x.Insert(&favorite)
+	} else {
+		_, err = x.Exec("delete from favorite where user_id = ? and episode_id = ?", user.Id, episodeId)
+	}
+
+	return err
+}
+
 func CreateFavorite(user User, episodeId int64) (Favorite, error) {
 	favorite := Favorite{UserId: user.Id, EpisodeId: episodeId}
 	_, err := x.Insert(&favorite)

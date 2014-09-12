@@ -42,3 +42,4 @@ create table favorite (
   episode_id bigint references episode(id) not null
 );
 create index index_favorite_episode_id on favorite using btree(episode_id);
+create unique index index_favorite_user_id_episode_id_unique on favorite using btree(user_id, episode_id);
