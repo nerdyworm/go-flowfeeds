@@ -40,7 +40,12 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewShowEpisode(episode))
+	feed, err := models.FindFeedById(episode.FeedId)
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewShowEpisode(episode, feed))
 	return nil
 }
 
@@ -55,7 +60,22 @@ func Listens(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewListens(listens))
+	userIdLookup := map[int64]bool{}
+	for i := range listens {
+		userIdLookup[listens[i].UserId] = true
+	}
+
+	userIds := []int64{}
+	for id := range userIdLookup {
+		userIds = append(userIds, id)
+	}
+
+	users, err := models.FindUserByIds(userIds)
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewListens(listens, users))
 	return nil
 }
 
@@ -65,12 +85,27 @@ func Favorites(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	listens, err := models.FindFavoritesForEpisode(int64(id))
+	favorites, err := models.FindFavoritesForEpisode(int64(id))
 	if err != nil {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewFavorites(listens))
+	userIdLookup := map[int64]bool{}
+	for i := range favorites {
+		userIdLookup[favorites[i].UserId] = true
+	}
+
+	userIds := []int64{}
+	for id := range userIdLookup {
+		userIds = append(userIds, id)
+	}
+
+	users, err := models.FindUserByIds(userIds)
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewFavorites(favorites, users))
 	return nil
 }
 

@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
@@ -67,14 +70,22 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	serializer := serializers.ShowUser{
-		serializers.User{
-			Id:    user.Id,
-			Email: user.Email,
-		},
+	w.WriteHeader(http.StatusCreated)
+	serializers.JSON(w, serializers.NewShowUser(user))
+	return nil
+}
+
+func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	serializers.JSON(w, serializer)
+	user, err := models.FindUserById(int64(id))
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewShowUser(user))
 	return nil
 }

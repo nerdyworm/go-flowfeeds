@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 
 	"code.google.com/p/go.crypto/bcrypt"
 )
@@ -75,6 +77,43 @@ func FindUserById(id int64) (User, error) {
 	}
 
 	return user, err
+}
+
+func FindUserByIds(ids []int64) ([]User, error) {
+	users := []User{}
+
+	if len(ids) == 0 {
+		return users, nil
+	}
+
+	stringIds := []string{}
+	for i := range ids {
+		stringIds = append(stringIds, fmt.Sprintf("%d", ids[i]))
+	}
+
+	query := fmt.Sprintf("select id, email from users where id in (%s)", strings.Join(stringIds, ","))
+	rows, err := x.DB().Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user := User{}
+
+		err := rows.Scan(
+			&user.Id,
+			&user.Email,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }
 
 func FindUserForSignin(email string) (User, error) {

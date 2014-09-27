@@ -126,27 +126,36 @@ func isDupeErrorOf(err error, indexName string) bool {
 	return false
 }
 
-func FeaturedEpisodeTeasers() ([]Teaser, []Feed, error) {
+func FeaturedEpisodeTeasers(user User) ([]Teaser, []Feed, []Listen, []Favorite, error) {
 	episodes := []Episode{}
 	feeds := []Feed{}
+	listens := []Listen{}
+	favorites := []Favorite{}
 
 	err := x.OrderBy("published desc").Limit(25, 0).Find(&episodes)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
+	episodeIds := []int64{}
 	feedIds := []int64{}
 	teasers := make([]Teaser, len(episodes))
 	for i, episode := range episodes {
 		teasers[i] = episode.Teaser()
 		feedIds = append(feedIds, episode.FeedId)
+		episodeIds = append(episodeIds, episode.Id)
 	}
 
 	if len(feedIds) > 0 {
 		err = x.In("id", feedIds).Find(&feeds)
 	}
 
-	return teasers, feeds, err
+	if len(episodeIds) > 0 {
+		err = x.Where("user_id = ?", user.Id).In("episode_id", episodeIds).Find(&listens)
+		err = x.Where("user_id = ?", user.Id).In("episode_id", episodeIds).Find(&favorites)
+	}
+
+	return teasers, feeds, listens, favorites, err
 }
 
 func FindEpisodeById(id int64) (Episode, error) {
@@ -165,6 +174,12 @@ func FindFeedById(id int64) (Feed, error) {
 	feed := Feed{}
 	_, err := x.Id(id).Get(&feed)
 	return feed, err
+}
+
+func FindFeedByIds(ids []int64) ([]Feed, error) {
+	feeds := []Feed{}
+	err := x.In("id", ids).Find(&feeds)
+	return feeds, err
 }
 
 func FindFeedByURL(url string) (Feed, error) {
@@ -223,4 +238,9 @@ func FindFavoritesForEpisode(id int64) ([]Favorite, error) {
 	favorites := []Favorite{}
 	err := x.Where("episode_id = ?", id).Limit(8).Find(&favorites)
 	return favorites, err
+}
+
+func DeleteFavorite(user User, id int64) error {
+	_, err := x.Where("user_id = ?", user.Id).Delete(Favorite{Id: id})
+	return err
 }

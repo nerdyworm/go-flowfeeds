@@ -1,7 +1,6 @@
 package feeds
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,14 +20,7 @@ func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	}
 
 	for _, feed := range feeds {
-		serializer.Feeds = append(serializer.Feeds, serializers.Feed{
-			Id:          feed.Id,
-			Title:       feed.Title,
-			Description: feed.Description,
-			Url:         feed.Url,
-			Thumb:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/thumb.jpg", feed.Id),
-			Cover:       fmt.Sprintf("http://s3.amazonaws.com/flowfeeds2/feeds/%d/cover.jpg", feed.Id),
-		})
+		serializer.Feeds = append(serializer.Feeds, serializers.NewFeed(feed))
 	}
 
 	serializers.JSON(w, serializer)

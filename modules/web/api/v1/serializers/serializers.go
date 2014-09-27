@@ -18,6 +18,7 @@ type Episodes struct {
 
 type ShowEpisode struct {
 	Episode Episode
+	Feeds   []Feed
 }
 
 type Episode struct {
@@ -41,8 +42,11 @@ type EpisodeLinks struct {
 	Related   string `json:"related"`
 }
 
-func NewShowEpisode(episode models.Episode) ShowEpisode {
-	return ShowEpisode{Episode: NewEpisode(episode)}
+func NewShowEpisode(episode models.Episode, feed models.Feed) ShowEpisode {
+	return ShowEpisode{
+		Episode: NewEpisode(episode),
+		Feeds:   []Feed{NewFeed(feed)},
+	}
 }
 
 func NewEpisode(episode models.Episode) Episode {
@@ -76,12 +80,16 @@ type Teaser struct {
 	PlaysCount  int
 	LovesCount  int
 	Favorited   bool
+	Listens     []int64
+	Favorites   []int64
 }
 
 type FeaturedsSerializer struct {
 	Featureds []models.Featured
 	Feeds     []Feed
 	Teasers   []Teaser
+	Listens   []Listen
+	Favorites []Favorite
 }
 
 type FeedsSerializer struct {
@@ -90,13 +98,35 @@ type FeedsSerializer struct {
 
 type Teasers struct {
 	Teasers []Teaser
+	Feeds   []Feed
 }
 
 func NewTeasers(teasers []models.Teaser) Teasers {
 	serializer := Teasers{}
 	serializer.Teasers = make([]Teaser, len(teasers))
+	serializer.Feeds = make([]Feed, 0)
+
+	feeds := map[int64]bool{}
+
 	for i, r := range teasers {
 		serializer.Teasers[i] = NewTeaser(r)
+		feeds[r.FeedId] = true
+	}
+
+	feedIds := []int64{}
+
+	for id := range feeds {
+		feedIds = append(feedIds, id)
+	}
+
+	// XXX - should resolve outside of this layer...
+	f, err := models.FindFeedByIds(feedIds)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, feed := range f {
+		serializer.Feeds = append(serializer.Feeds, NewFeed(feed))
 	}
 
 	return serializer
@@ -112,6 +142,17 @@ type Feed struct {
 	Updated     time.Time
 }
 
+func NewFeed(feed models.Feed) Feed {
+	return Feed{
+		Id:          feed.Id,
+		Title:       feed.Title,
+		Description: feed.Description,
+		Url:         feed.Url,
+		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, feed.Id),
+		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, feed.Id),
+	}
+}
+
 type User struct {
 	Id     int64
 	Email  string
@@ -120,6 +161,10 @@ type User struct {
 
 type ShowUser struct {
 	User User
+}
+
+func NewShowUser(user models.User) ShowUser {
+	return ShowUser{NewUser(user)}
 }
 
 type FeedShowSerializer struct {
@@ -169,6 +214,7 @@ type Listen struct {
 
 type Listens struct {
 	Listens []Listen
+	Users   []User
 }
 
 type ShowListen struct {
@@ -187,12 +233,17 @@ func NewShowListen(listen models.Listen) ShowListen {
 	return ShowListen{NewListen(listen)}
 }
 
-func NewListens(listens []models.Listen) Listens {
+func NewListens(listens []models.Listen, users []models.User) Listens {
 	serializer := Listens{}
 	serializer.Listens = make([]Listen, len(listens))
+	serializer.Users = make([]User, len(users))
 
 	for i, listen := range listens {
 		serializer.Listens[i] = NewListen(listen)
+	}
+
+	for i, user := range users {
+		serializer.Users[i] = NewUser(user)
 	}
 
 	return serializer
@@ -206,6 +257,7 @@ type Favorite struct {
 
 type Favorites struct {
 	Favorites []Favorite
+	Users     []User
 }
 
 type ShowFavorite struct {
@@ -224,12 +276,17 @@ func NewShowFavorite(favorite models.Favorite) ShowFavorite {
 	return ShowFavorite{NewFavorite(favorite)}
 }
 
-func NewFavorites(favorites []models.Favorite) Favorites {
+func NewFavorites(favorites []models.Favorite, users []models.User) Favorites {
 	serializer := Favorites{}
 	serializer.Favorites = make([]Favorite, len(favorites))
+	serializer.Users = make([]User, len(favorites))
 
 	for i, favorite := range favorites {
 		serializer.Favorites[i] = NewFavorite(favorite)
+	}
+
+	for i, user := range users {
+		serializer.Users[i] = NewUser(user)
 	}
 
 	return serializer
