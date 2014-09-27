@@ -209,10 +209,18 @@ func CreateListen(user User, episodeId int64) (Listen, error) {
 	return listen, err
 }
 
-func FindListensForEpisode(id int64) ([]Listen, error) {
+func FindListensForEpisode(id int64) ([]Listen, []User, error) {
 	listens := []Listen{}
+	users := []User{}
 	err := x.Where("episode_id = ?", id).Limit(8).Find(&listens)
-	return listens, err
+
+	ids := []int64{}
+	for i := range listens {
+		ids = append(ids, listens[i].UserId)
+	}
+
+	err = x.Table("users").In("id", ids).Find(&users)
+	return listens, users, err
 }
 
 func ToggleFavorite(user User, episodeId int64) error {
@@ -234,10 +242,22 @@ func CreateFavorite(user User, episodeId int64) (Favorite, error) {
 	return favorite, err
 }
 
-func FindFavoritesForEpisode(id int64) ([]Favorite, error) {
+func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	favorites := []Favorite{}
+	users := []User{}
+
 	err := x.Where("episode_id = ?", id).Limit(8).Find(&favorites)
-	return favorites, err
+	if err != nil {
+		return favorites, users, err
+	}
+
+	ids := []int64{}
+	for i := range favorites {
+		ids = append(ids, favorites[i].UserId)
+	}
+
+	err = x.Table("users").In("id", ids).Find(&users)
+	return favorites, users, err
 }
 
 func DeleteFavorite(user User, id int64) error {

@@ -55,22 +55,7 @@ func Listens(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	listens, err := models.FindListensForEpisode(int64(id))
-	if err != nil {
-		return err
-	}
-
-	userIdLookup := map[int64]bool{}
-	for i := range listens {
-		userIdLookup[listens[i].UserId] = true
-	}
-
-	userIds := []int64{}
-	for id := range userIdLookup {
-		userIds = append(userIds, id)
-	}
-
-	users, err := models.FindUserByIds(userIds)
+	listens, users, err := models.FindListensForEpisode(int64(id))
 	if err != nil {
 		return err
 	}
@@ -85,22 +70,7 @@ func Favorites(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	favorites, err := models.FindFavoritesForEpisode(int64(id))
-	if err != nil {
-		return err
-	}
-
-	userIdLookup := map[int64]bool{}
-	for i := range favorites {
-		userIdLookup[favorites[i].UserId] = true
-	}
-
-	userIds := []int64{}
-	for id := range userIdLookup {
-		userIds = append(userIds, id)
-	}
-
-	users, err := models.FindUserByIds(userIds)
+	favorites, users, err := models.FindFavoritesForEpisode(int64(id))
 	if err != nil {
 		return err
 	}
