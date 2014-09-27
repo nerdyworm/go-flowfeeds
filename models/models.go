@@ -212,7 +212,11 @@ func CreateListen(user User, episodeId int64) (Listen, error) {
 func FindListensForEpisode(id int64) ([]Listen, []User, error) {
 	listens := []Listen{}
 	users := []User{}
+
 	err := x.Where("episode_id = ?", id).Limit(8).Find(&listens)
+	if err != nil || len(listens) == 0 {
+		return listens, users, err
+	}
 
 	ids := []int64{}
 	for i := range listens {
@@ -247,7 +251,7 @@ func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	users := []User{}
 
 	err := x.Where("episode_id = ?", id).Limit(8).Find(&favorites)
-	if err != nil {
+	if err != nil || len(favorites) == 0 {
 		return favorites, users, err
 	}
 
