@@ -22,18 +22,18 @@ type ShowEpisode struct {
 }
 
 type Episode struct {
-	Id          int64
-	Feed        int64
-	Title       string
-	Description string
-	Url         string
-	Thumb       string
-	Cover       string
-	Published   time.Time
-	PlaysCount  int
-	LovesCount  int
-	Favorited   bool
-	Links       EpisodeLinks `json:"links"`
+	Id             int64
+	Feed           int64
+	Title          string
+	Description    string
+	Url            string
+	Thumb          string
+	Cover          string
+	Published      time.Time
+	FavoritesCount int
+	ListensCount   int
+	Favorited      bool
+	Links          EpisodeLinks `json:"links"`
 }
 
 type EpisodeLinks struct {
@@ -51,14 +51,16 @@ func NewShowEpisode(episode models.Episode, feed models.Feed) ShowEpisode {
 
 func NewEpisode(episode models.Episode) Episode {
 	return Episode{
-		Id:          episode.Id,
-		Feed:        episode.FeedId,
-		Title:       episode.Title,
-		Description: episode.Description,
-		Url:         episode.Url,
-		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, episode.FeedId),
-		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, episode.FeedId),
-		Published:   episode.Published,
+		Id:             episode.Id,
+		Feed:           episode.FeedId,
+		Title:          episode.Title,
+		Description:    episode.Description,
+		Url:            episode.Url,
+		Thumb:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, episode.FeedId),
+		Cover:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, episode.FeedId),
+		Published:      episode.Published,
+		ListensCount:   episode.ListensCount,
+		FavoritesCount: episode.FavoritesCount,
 		Links: EpisodeLinks{
 			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
 			Listens:   fmt.Sprintf("/api/v1/episodes/%d/listens", episode.Id),
@@ -68,20 +70,20 @@ func NewEpisode(episode models.Episode) Episode {
 }
 
 type Teaser struct {
-	Id          int64
-	Feed        int64
-	Episode     int64
-	Title       string
-	Description string
-	Url         string
-	Thumb       string
-	Cover       string
-	Published   time.Time
-	PlaysCount  int
-	LovesCount  int
-	Favorited   bool
-	Listens     []int64
-	Favorites   []int64
+	Id             int64
+	Feed           int64
+	Episode        int64
+	Title          string
+	Description    string
+	Url            string
+	Thumb          string
+	Cover          string
+	Published      time.Time
+	ListensCount   int
+	FavoritesCount int
+	Favorited      bool
+	Listens        []int64
+	Favorites      []int64
 }
 
 type FeaturedsSerializer struct {
@@ -186,15 +188,17 @@ func JSON(w http.ResponseWriter, v interface{}) error {
 
 func NewTeaser(teaser models.Teaser) Teaser {
 	return Teaser{
-		Id:          teaser.Id,
-		Feed:        teaser.FeedId,
-		Episode:     teaser.Episode,
-		Title:       teaser.Title,
-		Description: teaser.Description,
-		Url:         teaser.Url,
-		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, teaser.FeedId),
-		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, teaser.FeedId),
-		Published:   teaser.Published,
+		Id:             teaser.Id,
+		Feed:           teaser.FeedId,
+		Episode:        teaser.Episode,
+		Title:          teaser.Title,
+		Description:    teaser.Description,
+		Url:            teaser.Url,
+		Thumb:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, teaser.FeedId),
+		Cover:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, teaser.FeedId),
+		Published:      teaser.Published,
+		ListensCount:   teaser.ListensCount,
+		FavoritesCount: teaser.FavoritesCount,
 	}
 }
 
@@ -218,7 +222,9 @@ type Listens struct {
 }
 
 type ShowListen struct {
-	Listen Listen
+	Listen   Listen
+	Episodes []Episode
+	Teasers  []Teaser
 }
 
 func NewListen(listen models.Listen) Listen {
@@ -229,8 +235,17 @@ func NewListen(listen models.Listen) Listen {
 	}
 }
 
-func NewShowListen(listen models.Listen) ShowListen {
-	return ShowListen{NewListen(listen)}
+func NewShowListen(listen models.Listen, episode models.Episode) ShowListen {
+	serializer := ShowListen{}
+	serializer.Listen = NewListen(listen)
+
+	serializer.Episodes = make([]Episode, 1)
+	serializer.Episodes[0] = NewEpisode(episode)
+
+	serializer.Teasers = make([]Teaser, 1)
+	serializer.Teasers[0] = NewTeaser(episode.Teaser())
+
+	return serializer
 }
 
 func NewListens(listens []models.Listen, users []models.User) Listens {
@@ -262,6 +277,8 @@ type Favorites struct {
 
 type ShowFavorite struct {
 	Favorite Favorite
+	Episodes []Episode
+	Teasers  []Teaser
 }
 
 func NewFavorite(favorite models.Favorite) Favorite {
@@ -272,8 +289,17 @@ func NewFavorite(favorite models.Favorite) Favorite {
 	}
 }
 
-func NewShowFavorite(favorite models.Favorite) ShowFavorite {
-	return ShowFavorite{NewFavorite(favorite)}
+func NewShowFavorite(favorite models.Favorite, episode models.Episode) ShowFavorite {
+	s := ShowFavorite{}
+	s.Favorite = NewFavorite(favorite)
+
+	s.Episodes = make([]Episode, 1)
+	s.Episodes[0] = NewEpisode(episode)
+
+	s.Teasers = make([]Teaser, 1)
+	s.Teasers[0] = NewTeaser(episode.Teaser())
+
+	return s
 }
 
 func NewFavorites(favorites []models.Favorite, users []models.User) Favorites {

@@ -16,7 +16,9 @@ create table episode (
   description text not null,
   url text not null,
   image text not null,
-  published timestamp with time zone not null
+  published timestamp with time zone not null,
+  listens_count int not null default 0,
+  favorites_count int not null default 0
 );
 
 create unique index episodes_guid_unique on episode using btree(guid);
@@ -43,3 +45,36 @@ create table favorite (
 );
 create index index_favorite_episode_id on favorite using btree(episode_id);
 create unique index index_favorite_user_id_episode_id_unique on favorite using btree(user_id, episode_id);
+
+
+CREATE OR REPLACE FUNCTION update_listens_count() RETURNS TRIGGER AS $update_listens_trigger$
+BEGIN
+  IF (TG_OP = 'DELETE') THEN
+    UPDATE episode SET listens_count = (select count(*) from listen where episode_id = OLD.episode_id) WHERE episode.id = OLD.episode_id;
+    RETURN OLD;
+  ELSIF (TG_OP = 'INSERT') THEN
+    UPDATE episode SET listens_count = (select count(*) from listen where episode_id = NEW.episode_id) WHERE episode.id = NEW.episode_id;
+    RETURN NEW;
+  END IF;
+  RETURN NULL;
+END;
+$update_listens_trigger$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_listens_trigger
+AFTER INSERT OR DELETE ON listen FOR EACH ROW EXECUTE PROCEDURE update_listens_count();
+
+CREATE OR REPLACE FUNCTION update_favorites_count() RETURNS TRIGGER AS $update_favorites_trigger$
+BEGIN
+  IF (TG_OP = 'DELETE') THEN
+    UPDATE episode SET favorites_count = (select count(*) from favorite where episode_id = OLD.episode_id) WHERE episode.id = OLD.episode_id;
+    RETURN OLD;
+  ELSIF (TG_OP = 'INSERT') THEN
+    UPDATE episode SET favorites_count = (select count(*) from favorite where episode_id = NEW.episode_id) WHERE episode.id = NEW.episode_id;
+    RETURN NEW;
+  END IF;
+  RETURN NULL;
+END;
+$update_favorites_trigger$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_favorites_trigger
+AFTER INSERT OR DELETE ON favorite FOR EACH ROW EXECUTE PROCEDURE update_favorites_count();

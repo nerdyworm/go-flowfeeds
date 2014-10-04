@@ -45,5 +45,11 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowListen(listen))
+	episode, err := models.FindEpisodeById(listen.EpisodeId)
+	if err != nil {
+		log.Println("listens.Create models.FindEpisodeById", err)
+		return err
+	}
+
+	return serializers.JSON(w, serializers.NewShowListen(listen, episode))
 }

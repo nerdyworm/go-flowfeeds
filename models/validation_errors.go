@@ -1,7 +1,14 @@
 package models
 
+import "fmt"
+
 type ValidationErrors struct {
 	Errors map[string][]string
+}
+
+func doThing() {
+	things := ValidationErrors{}
+	fmt.Println(things)
 }
 
 func NewValidationErrors() ValidationErrors {

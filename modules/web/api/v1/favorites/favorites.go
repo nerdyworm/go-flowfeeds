@@ -46,7 +46,13 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowFavorite(listen))
+	episode, err := models.FindEpisodeById(listen.EpisodeId)
+	if err != nil {
+		log.Println("listens.Create models.FindEpisodeById", err)
+		return err
+	}
+
+	return serializers.JSON(w, serializers.NewShowFavorite(listen, episode))
 }
 
 func Delete(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
@@ -55,11 +61,20 @@ func Delete(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	err = models.DeleteFavorite(ctx.User, int64(id))
+	favorite, err := models.FindFavoriteById(int64(id))
 	if err != nil {
 		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	return nil
+	err = models.DeleteFavorite(ctx.User, favorite.Id)
+	if err != nil {
+		return err
+	}
+
+	episode, err := models.FindEpisodeById(favorite.EpisodeId)
+	if err != nil {
+		return err
+	}
+
+	return serializers.JSON(w, serializers.NewShowFavorite(favorite, episode))
 }

@@ -30,14 +30,16 @@ func Close() {
 }
 
 type Episode struct {
-	Id          int64
-	FeedId      int64
-	Guid        string
-	Title       string
-	Description string
-	Url         string
-	Image       string
-	Published   time.Time
+	Id             int64
+	FeedId         int64
+	Guid           string
+	Title          string
+	Description    string
+	Url            string
+	Image          string
+	Published      time.Time
+	ListensCount   int
+	FavoritesCount int
 }
 
 type Listen struct {
@@ -58,26 +60,30 @@ type Top100 struct {
 }
 
 type Teaser struct {
-	Id          int64
-	Episode     int64
-	Title       string
-	Description string
-	Url         string
-	Image       string
-	FeedId      int64
-	Published   time.Time
+	Id             int64
+	Episode        int64
+	Title          string
+	Description    string
+	Url            string
+	Image          string
+	FeedId         int64
+	Published      time.Time
+	ListensCount   int
+	FavoritesCount int
 }
 
 func (e Episode) Teaser() Teaser {
 	return Teaser{
-		Id:          e.Id,
-		Episode:     e.Id,
-		Title:       e.Title,
-		Description: e.Description,
-		Url:         e.Url,
-		Image:       e.Image,
-		FeedId:      e.FeedId,
-		Published:   e.Published,
+		Id:             e.Id,
+		Episode:        e.Id,
+		Title:          e.Title,
+		Description:    e.Description,
+		Url:            e.Url,
+		Image:          e.Image,
+		FeedId:         e.FeedId,
+		Published:      e.Published,
+		FavoritesCount: e.FavoritesCount,
+		ListensCount:   e.ListensCount,
 	}
 }
 
@@ -246,6 +252,11 @@ func CreateFavorite(user User, episodeId int64) (Favorite, error) {
 	return favorite, err
 }
 
+func DeleteFavorite(user User, id int64) error {
+	_, err := x.Where("user_id = ?", user.Id).Delete(Favorite{Id: id})
+	return err
+}
+
 func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	favorites := []Favorite{}
 	users := []User{}
@@ -264,7 +275,8 @@ func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	return favorites, users, err
 }
 
-func DeleteFavorite(user User, id int64) error {
-	_, err := x.Where("user_id = ?", user.Id).Delete(Favorite{Id: id})
-	return err
+func FindFavoriteById(id int64) (Favorite, error) {
+	favorite := Favorite{}
+	_, err := x.Id(id).Get(&favorite)
+	return favorite, err
 }
