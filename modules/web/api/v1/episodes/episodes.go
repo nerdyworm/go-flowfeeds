@@ -34,7 +34,7 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	episode, err := models.FindEpisodeById(int64(id))
+	episode, err := models.FindEpisodeByIdForUser(int64(id), ctx.User)
 	if err != nil {
 		return err
 	}
@@ -84,11 +84,35 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	related, err := models.FindRelatedTeasers(int64(id))
+	related, err := models.FindRelatedEpisodes(int64(id))
 	if err != nil {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewTeasers(related))
+	serializers.JSON(w, serializers.NewEpisodes(related))
 	return nil
+}
+
+func ToggleFavorite(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	err = models.ToggleFavorite(ctx.User, int64(id))
+	if err != nil {
+		return err
+	}
+
+	episode, err := models.FindEpisodeByIdForUser(int64(id), ctx.User)
+	if err != nil {
+		return err
+	}
+
+	feed, err := models.FindFeedById(episode.FeedId)
+	if err != nil {
+		return err
+	}
+
+	return serializers.JSON(w, serializers.NewShowEpisode(episode, feed))
 }

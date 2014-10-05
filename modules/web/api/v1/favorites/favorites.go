@@ -16,7 +16,6 @@ import (
 type CreateFavoriteRequest struct {
 	Favorite struct {
 		Episode string
-		Teaser  string
 	}
 }
 
@@ -34,25 +33,22 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 
 	id, err := strconv.Atoi(request.Favorite.Episode)
 	if err != nil {
-		id, err = strconv.Atoi(request.Favorite.Teaser)
-		if err != nil {
-			return err
-		}
-	}
-
-	listen, err := models.CreateFavorite(ctx.User, int64(id))
-	if err != nil {
-		log.Println("listens.Create models.CreateFavorite", err)
 		return err
 	}
 
-	episode, err := models.FindEpisodeById(listen.EpisodeId)
+	err = models.ToggleFavorite(ctx.User, int64(id))
+	if err != nil {
+		log.Println("listens.Create models.ToggleFavorite", err)
+		return err
+	}
+
+	episode, err := models.FindEpisodeById(int64(id))
 	if err != nil {
 		log.Println("listens.Create models.FindEpisodeById", err)
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowFavorite(listen, episode))
+	return serializers.JSON(w, serializers.NewShowFavorite(models.Favorite{}, episode))
 }
 
 func Delete(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
@@ -76,5 +72,5 @@ func Delete(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowFavorite(favorite, episode))
+	return serializers.JSON(w, serializers.NewDeleteFavorite(favorite, episode))
 }

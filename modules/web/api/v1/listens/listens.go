@@ -14,7 +14,6 @@ import (
 type CreateListenRequest struct {
 	Listen struct {
 		Episode string
-		Teaser  string
 	}
 }
 
@@ -30,13 +29,9 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Fallback to get the id, if none is here invalid request
 	id, err := strconv.Atoi(request.Listen.Episode)
 	if err != nil {
-		id, err = strconv.Atoi(request.Listen.Teaser)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	listen, err := models.CreateListen(ctx.User, int64(id))
@@ -45,7 +40,7 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	episode, err := models.FindEpisodeById(listen.EpisodeId)
+	episode, err := models.FindEpisodeByIdForUser(listen.EpisodeId, ctx.User)
 	if err != nil {
 		log.Println("listens.Create models.FindEpisodeById", err)
 		return err

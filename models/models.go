@@ -40,6 +40,8 @@ type Episode struct {
 	Published      time.Time
 	ListensCount   int
 	FavoritesCount int
+	Favorited      bool `xorm:"-"`
+	Listened       bool `xorm:"-"`
 }
 
 type Listen struct {
@@ -59,37 +61,9 @@ type Top100 struct {
 	Teaser int64
 }
 
-type Teaser struct {
-	Id             int64
-	Episode        int64
-	Title          string
-	Description    string
-	Url            string
-	Image          string
-	FeedId         int64
-	Published      time.Time
-	ListensCount   int
-	FavoritesCount int
-}
-
-func (e Episode) Teaser() Teaser {
-	return Teaser{
-		Id:             e.Id,
-		Episode:        e.Id,
-		Title:          e.Title,
-		Description:    e.Description,
-		Url:            e.Url,
-		Image:          e.Image,
-		FeedId:         e.FeedId,
-		Published:      e.Published,
-		FavoritesCount: e.FavoritesCount,
-		ListensCount:   e.ListensCount,
-	}
-}
-
 type Featured struct {
-	Rank   int `json:"Id"`
-	Teaser int64
+	Rank    int `json:"Id"`
+	Episode int64
 }
 
 type Feed struct {
@@ -132,7 +106,7 @@ func isDupeErrorOf(err error, indexName string) bool {
 	return false
 }
 
-func FeaturedEpisodeTeasers(user User) ([]Teaser, []Feed, []Listen, []Favorite, error) {
+func FeaturedEpisodes(user User) ([]Episode, []Feed, []Listen, []Favorite, error) {
 	episodes := []Episode{}
 	feeds := []Feed{}
 	listens := []Listen{}
@@ -145,9 +119,8 @@ func FeaturedEpisodeTeasers(user User) ([]Teaser, []Feed, []Listen, []Favorite, 
 
 	episodeIds := []int64{}
 	feedIds := []int64{}
-	teasers := make([]Teaser, len(episodes))
-	for i, episode := range episodes {
-		teasers[i] = episode.Teaser()
+
+	for _, episode := range episodes {
 		feedIds = append(feedIds, episode.FeedId)
 		episodeIds = append(episodeIds, episode.Id)
 	}
@@ -161,12 +134,35 @@ func FeaturedEpisodeTeasers(user User) ([]Teaser, []Feed, []Listen, []Favorite, 
 		err = x.Where("user_id = ?", user.Id).In("episode_id", episodeIds).Find(&favorites)
 	}
 
-	return teasers, feeds, listens, favorites, err
+	return episodes, feeds, listens, favorites, err
 }
 
 func FindEpisodeById(id int64) (Episode, error) {
 	episode := Episode{}
 	_, err := x.Id(id).Get(&episode)
+	return episode, err
+}
+
+func FindEpisodeByIdForUser(id int64, user User) (Episode, error) {
+	episode, err := FindEpisodeById(id)
+	if err != nil {
+		return episode, err
+	}
+
+	listens, err := x.Where("episode_id = ? AND user_id = ?", id, user.Id).Count(&Listen{})
+	if err != nil {
+		return episode, err
+	}
+
+	episode.Listened = listens > 0
+
+	favs, err := x.Where("episode_id = ? AND user_id = ?", id, user.Id).Count(&Favorite{})
+	if err != nil {
+		return episode, err
+	}
+
+	episode.Favorited = favs > 0
+
 	return episode, err
 }
 
@@ -194,19 +190,14 @@ func FindFeedByURL(url string) (Feed, error) {
 	return feed, err
 }
 
-func FindRelatedTeasers(episodeId int64) ([]Teaser, error) {
+func FindRelatedEpisodes(episodeId int64) ([]Episode, error) {
 	related := []Episode{}
 	err := x.Where("id <> ?", episodeId).OrderBy("random()").Limit(5).Find(&related)
 	if err != nil {
 		return nil, err
 	}
 
-	teasers := make([]Teaser, len(related))
-	for i := range related {
-		teasers[i] = related[i].Teaser()
-	}
-
-	return teasers, err
+	return related, err
 }
 
 func CreateListen(user User, episodeId int64) (Listen, error) {

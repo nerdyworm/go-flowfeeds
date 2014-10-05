@@ -50,6 +50,7 @@ func Run(options ServerOptions) {
 	apiRouter.HandleFunc("/episodes/{id}/listens", Default(episodes.Listens)).Methods("GET")
 	apiRouter.HandleFunc("/episodes/{id}/related", Default(episodes.Related)).Methods("GET")
 	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.Show)).Methods("GET")
+	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.ToggleFavorite)).Methods("PUT")
 	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
 
 	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")

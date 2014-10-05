@@ -12,10 +12,6 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/helpers"
 )
 
-type Episodes struct {
-	Episodes []Episode
-}
-
 type ShowEpisode struct {
 	Episode Episode
 	Feeds   []Feed
@@ -33,6 +29,7 @@ type Episode struct {
 	FavoritesCount int
 	ListensCount   int
 	Favorited      bool
+	Listened       bool
 	Links          EpisodeLinks `json:"links"`
 }
 
@@ -59,6 +56,8 @@ func NewEpisode(episode models.Episode) Episode {
 		Thumb:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, episode.FeedId),
 		Cover:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, episode.FeedId),
 		Published:      episode.Published,
+		Favorited:      episode.Favorited,
+		Listened:       episode.Listened,
 		ListensCount:   episode.ListensCount,
 		FavoritesCount: episode.FavoritesCount,
 		Links: EpisodeLinks{
@@ -69,49 +68,30 @@ func NewEpisode(episode models.Episode) Episode {
 	}
 }
 
-type Teaser struct {
-	Id             int64
-	Feed           int64
-	Episode        int64
-	Title          string
-	Description    string
-	Url            string
-	Thumb          string
-	Cover          string
-	Published      time.Time
-	ListensCount   int
-	FavoritesCount int
-	Favorited      bool
-	Listens        []int64
-	Favorites      []int64
-}
-
 type FeaturedsSerializer struct {
 	Featureds []models.Featured
 	Feeds     []Feed
-	Teasers   []Teaser
-	Listens   []Listen
-	Favorites []Favorite
+	Episodes  []Episode
 }
 
 type FeedsSerializer struct {
 	Feeds []Feed
 }
 
-type Teasers struct {
-	Teasers []Teaser
-	Feeds   []Feed
+type Episodes struct {
+	Episodes []Episode
+	Feeds    []Feed
 }
 
-func NewTeasers(teasers []models.Teaser) Teasers {
-	serializer := Teasers{}
-	serializer.Teasers = make([]Teaser, len(teasers))
+func NewEpisodes(teasers []models.Episode) Episodes {
+	serializer := Episodes{}
+	serializer.Episodes = make([]Episode, len(teasers))
 	serializer.Feeds = make([]Feed, 0)
 
 	feeds := map[int64]bool{}
 
 	for i, r := range teasers {
-		serializer.Teasers[i] = NewTeaser(r)
+		serializer.Episodes[i] = NewEpisode(r)
 		feeds[r.FeedId] = true
 	}
 
@@ -186,22 +166,6 @@ func JSON(w http.ResponseWriter, v interface{}) error {
 	return err
 }
 
-func NewTeaser(teaser models.Teaser) Teaser {
-	return Teaser{
-		Id:             teaser.Id,
-		Feed:           teaser.FeedId,
-		Episode:        teaser.Episode,
-		Title:          teaser.Title,
-		Description:    teaser.Description,
-		Url:            teaser.Url,
-		Thumb:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, teaser.FeedId),
-		Cover:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, teaser.FeedId),
-		Published:      teaser.Published,
-		ListensCount:   teaser.ListensCount,
-		FavoritesCount: teaser.FavoritesCount,
-	}
-}
-
 func NewUser(user models.User) User {
 	return User{
 		Id:     user.Id,
@@ -224,7 +188,6 @@ type Listens struct {
 type ShowListen struct {
 	Listen   Listen
 	Episodes []Episode
-	Teasers  []Teaser
 }
 
 func NewListen(listen models.Listen) Listen {
@@ -241,9 +204,6 @@ func NewShowListen(listen models.Listen, episode models.Episode) ShowListen {
 
 	serializer.Episodes = make([]Episode, 1)
 	serializer.Episodes[0] = NewEpisode(episode)
-
-	serializer.Teasers = make([]Teaser, 1)
-	serializer.Teasers[0] = NewTeaser(episode.Teaser())
 
 	return serializer
 }
@@ -278,7 +238,10 @@ type Favorites struct {
 type ShowFavorite struct {
 	Favorite Favorite
 	Episodes []Episode
-	Teasers  []Teaser
+}
+
+type DeleteFavorite struct {
+	Episodes []Episode
 }
 
 func NewFavorite(favorite models.Favorite) Favorite {
@@ -296,8 +259,13 @@ func NewShowFavorite(favorite models.Favorite, episode models.Episode) ShowFavor
 	s.Episodes = make([]Episode, 1)
 	s.Episodes[0] = NewEpisode(episode)
 
-	s.Teasers = make([]Teaser, 1)
-	s.Teasers[0] = NewTeaser(episode.Teaser())
+	return s
+}
+
+func NewDeleteFavorite(favorite models.Favorite, episode models.Episode) DeleteFavorite {
+	s := DeleteFavorite{}
+	s.Episodes = make([]Episode, 1)
+	s.Episodes[0] = NewEpisode(episode)
 
 	return s
 }
