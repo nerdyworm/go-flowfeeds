@@ -3,6 +3,7 @@ package featured
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
@@ -15,7 +16,13 @@ func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 	serializer.Episodes = make([]serializers.Episode, 0)
 	serializer.Feeds = make([]serializers.Feed, 0)
 
-	teasers, feeds, listens, favorites, err := models.FeaturedEpisodes(ctx.User)
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	options := models.ListOptions{
+		PerPage: 24,
+		Page:    page,
+	}
+
+	teasers, feeds, listens, favorites, err := models.FeaturedEpisodes(ctx.User, options)
 	if err != nil {
 		log.Println("featued.Index models.FeaturedEpisodeEpisodes", err)
 		return err

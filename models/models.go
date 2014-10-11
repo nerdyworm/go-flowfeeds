@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
@@ -106,13 +107,42 @@ func isDupeErrorOf(err error, indexName string) bool {
 	return false
 }
 
-func FeaturedEpisodes(user User) ([]Episode, []Feed, []Listen, []Favorite, error) {
+const DefaultPerPage = 10
+
+type ListOptions struct {
+	PerPage int
+	Page    int
+}
+
+func (o ListOptions) PageOrDefault() int {
+	if o.Page <= 0 {
+		return 1
+	}
+
+	return o.Page
+
+}
+
+func (o ListOptions) Offset() int {
+	return (o.PageOrDefault() - 1) * o.PerPageOrDefault()
+}
+
+func (o ListOptions) PerPageOrDefault() int {
+	if o.PerPage <= 0 {
+		return DefaultPerPage
+	}
+	return o.PerPage
+}
+
+func FeaturedEpisodes(user User, options ListOptions) ([]Episode, []Feed, []Listen, []Favorite, error) {
 	episodes := []Episode{}
 	feeds := []Feed{}
 	listens := []Listen{}
 	favorites := []Favorite{}
 
-	err := x.OrderBy("published desc").Limit(25, 0).Find(&episodes)
+	log.Println(options)
+
+	err := x.OrderBy("published desc").Limit(options.PerPageOrDefault(), options.Offset()).Find(&episodes)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -192,7 +222,7 @@ func FindFeedByURL(url string) (Feed, error) {
 
 func FindRelatedEpisodes(episodeId int64) ([]Episode, error) {
 	related := []Episode{}
-	err := x.Where("id <> ?", episodeId).OrderBy("random()").Limit(5).Find(&related)
+	err := x.Where("id <> ?", episodeId).OrderBy("random()").Limit(10).Find(&related)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +240,7 @@ func FindListensForEpisode(id int64) ([]Listen, []User, error) {
 	listens := []Listen{}
 	users := []User{}
 
-	err := x.Where("episode_id = ?", id).Limit(8).Find(&listens)
+	err := x.Where("episode_id = ?", id).OrderBy("id desc").Limit(20).Find(&listens)
 	if err != nil || len(listens) == 0 {
 		return listens, users, err
 	}
@@ -252,7 +282,7 @@ func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	favorites := []Favorite{}
 	users := []User{}
 
-	err := x.Where("episode_id = ?", id).Limit(8).Find(&favorites)
+	err := x.Where("episode_id = ?", id).OrderBy("id desc").Limit(20).Find(&favorites)
 	if err != nil || len(favorites) == 0 {
 		return favorites, users, err
 	}

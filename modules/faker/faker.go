@@ -14,7 +14,7 @@ import (
 func Run() {
 	log.Println("Faking data")
 
-	featured, _, _, _, err := models.FeaturedEpisodes(models.User{})
+	featured, _, _, _, err := models.FeaturedEpisodes(models.User{}, models.ListOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}
