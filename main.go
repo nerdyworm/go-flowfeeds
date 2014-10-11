@@ -6,6 +6,7 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/faker"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/updates"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web"
 	"github.com/codegangsta/cli"
@@ -43,6 +44,13 @@ func main() {
 			},
 			Action: func(c *cli.Context) {
 				updates.Run(c.String("file"))
+			},
+		},
+		cli.Command{
+			Name:        "faker",
+			Description: "This command will generate fake users and activity - shhhhhh",
+			Action: func(c *cli.Context) {
+				faker.Run()
 			},
 		},
 		cli.Command{

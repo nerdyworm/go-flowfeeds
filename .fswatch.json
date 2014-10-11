@@ -2,7 +2,7 @@
     "paths": [
         "."
     ],
-    "depth": 5,
+    "depth": 10,
     "exclude": [],
     "include": ["\\.(go)$"],
     "command": [
