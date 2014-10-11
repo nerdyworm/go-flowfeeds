@@ -32,17 +32,17 @@ func Close() {
 
 type Episode struct {
 	Id             int64
-	FeedId         int64
+	FeedId         int64 `db:"feed_id"`
 	Guid           string
 	Title          string
 	Description    string
 	Url            string
 	Image          string
 	Published      time.Time
-	ListensCount   int
-	FavoritesCount int
-	Favorited      bool `xorm:"-"`
-	Listened       bool `xorm:"-"`
+	ListensCount   int  `db:"listens_count"`
+	FavoritesCount int  `db:"favorites_count"`
+	Favorited      bool `xorm:"-",db:"-"`
+	Listened       bool `xorm:"-",db:"-"`
 }
 
 type Listen struct {
@@ -165,35 +165,6 @@ func FeaturedEpisodes(user User, options ListOptions) ([]Episode, []Feed, []List
 	}
 
 	return episodes, feeds, listens, favorites, err
-}
-
-func FindEpisodeById(id int64) (Episode, error) {
-	episode := Episode{}
-	_, err := x.Id(id).Get(&episode)
-	return episode, err
-}
-
-func FindEpisodeByIdForUser(id int64, user User) (Episode, error) {
-	episode, err := FindEpisodeById(id)
-	if err != nil {
-		return episode, err
-	}
-
-	listens, err := x.Where("episode_id = ? AND user_id = ?", id, user.Id).Count(&Listen{})
-	if err != nil {
-		return episode, err
-	}
-
-	episode.Listened = listens > 0
-
-	favs, err := x.Where("episode_id = ? AND user_id = ?", id, user.Id).Count(&Favorite{})
-	if err != nil {
-		return episode, err
-	}
-
-	episode.Favorited = favs > 0
-
-	return episode, err
 }
 
 func Feeds() ([]Feed, error) {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
@@ -26,6 +27,7 @@ func Default(handler ApplicationHandler) http.HandlerFunc {
 		}
 
 		context := ctx.Context{}
+		context.Store = datastore.NewDatastore()
 
 		user, err := sessions.CurrentUser(r)
 		if err != nil {

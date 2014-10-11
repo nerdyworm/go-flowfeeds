@@ -34,7 +34,7 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	episode, err := models.FindEpisodeByIdForUser(int64(id), ctx.User)
+	episode, err := ctx.Store.Episodes.GetForUser(&ctx.User, int64(id))
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewShowEpisode(episode, feed))
+	serializers.JSON(w, serializers.NewShowEpisode(*episode, feed))
 	return nil
 }
 
@@ -104,7 +104,7 @@ func ToggleFavorite(ctx ctx.Context, w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	episode, err := models.FindEpisodeByIdForUser(int64(id), ctx.User)
+	episode, err := ctx.Store.Episodes.GetForUser(&ctx.User, int64(id))
 	if err != nil {
 		return err
 	}
@@ -114,5 +114,5 @@ func ToggleFavorite(ctx ctx.Context, w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowEpisode(episode, feed))
+	return serializers.JSON(w, serializers.NewShowEpisode(*episode, feed))
 }

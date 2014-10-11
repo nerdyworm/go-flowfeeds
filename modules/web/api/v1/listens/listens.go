@@ -40,11 +40,11 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	episode, err := models.FindEpisodeByIdForUser(listen.EpisodeId, ctx.User)
+	episode, err := ctx.Store.Episodes.GetForUser(&ctx.User, int64(id))
 	if err != nil {
 		log.Println("listens.Create models.FindEpisodeById", err)
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowListen(listen, episode))
+	return serializers.JSON(w, serializers.NewShowListen(listen, *episode))
 }

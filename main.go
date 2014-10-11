@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/faker"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/updates"
@@ -24,6 +25,11 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer models.Close()
+
+	err = datastore.Connect(pgConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	app := cli.NewApp()
 	app.Name = "Flowfeeds"
