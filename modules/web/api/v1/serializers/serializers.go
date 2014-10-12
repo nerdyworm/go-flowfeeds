@@ -122,7 +122,6 @@ func NewFeed(feed models.Feed) Feed {
 
 type User struct {
 	Id     int64
-	Email  string
 	Avatar string
 }
 
@@ -154,7 +153,6 @@ func JSON(w http.ResponseWriter, v interface{}) error {
 func NewUser(user models.User) User {
 	return User{
 		Id:     user.Id,
-		Email:  user.Email,
 		Avatar: helpers.Gravatar(user.Email),
 	}
 }
@@ -193,17 +191,17 @@ func NewShowListen(listen models.Listen, episode models.Episode) ShowListen {
 	return serializer
 }
 
-func NewListens(listens []models.Listen, users []models.User) Listens {
+func NewListens(listens []*models.Listen, users []*models.User) Listens {
 	serializer := Listens{}
 	serializer.Listens = make([]Listen, len(listens))
 	serializer.Users = make([]User, len(users))
 
 	for i, listen := range listens {
-		serializer.Listens[i] = NewListen(listen)
+		serializer.Listens[i] = NewListen(*listen)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(user)
+		serializer.Users[i] = NewUser(*user)
 	}
 
 	return serializer
@@ -255,17 +253,17 @@ func NewDeleteFavorite(favorite models.Favorite, episode models.Episode) DeleteF
 	return s
 }
 
-func NewFavorites(favorites []models.Favorite, users []models.User) Favorites {
+func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites {
 	serializer := Favorites{}
 	serializer.Favorites = make([]Favorite, len(favorites))
 	serializer.Users = make([]User, len(favorites))
 
 	for i, favorite := range favorites {
-		serializer.Favorites[i] = NewFavorite(favorite)
+		serializer.Favorites[i] = NewFavorite(*favorite)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(user)
+		serializer.Users[i] = NewUser(*user)
 	}
 
 	return serializer

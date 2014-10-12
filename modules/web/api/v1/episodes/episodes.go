@@ -52,7 +52,7 @@ func Listens(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	listens, users, err := models.FindListensForEpisode(int64(id))
+	listens, users, err := ctx.Store.Episodes.Listens(int64(id))
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func Favorites(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	favorites, users, err := models.FindFavoritesForEpisode(int64(id))
+	favorites, users, err := ctx.Store.Episodes.Favorites(int64(id))
 	if err != nil {
 		return err
 	}
@@ -82,12 +82,12 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	related, err := ctx.Store.Episodes.Related(int64(id))
+	related, feeds, err := ctx.Store.Episodes.Related(int64(id))
 	if err != nil {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewEpisodes(related, []*models.Feed{}))
+	serializers.JSON(w, serializers.NewEpisodes(related, feeds))
 	return nil
 }
 

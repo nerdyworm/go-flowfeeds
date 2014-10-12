@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
 )
@@ -34,7 +33,7 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	listen, err := models.CreateListen(ctx.User, int64(id))
+	listen, err := ctx.Store.Listens.Create(&ctx.User, int64(id))
 	if err != nil {
 		log.Println("listens.Create models.CreateListen", err)
 		return err
@@ -46,5 +45,5 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return serializers.JSON(w, serializers.NewShowListen(listen, *episode))
+	return serializers.JSON(w, serializers.NewShowListen(*listen, *episode))
 }

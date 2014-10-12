@@ -29,21 +29,21 @@ func Run() {
 
 		for _, f := range featured {
 			if shouldListen() {
-				models.CreateListen(user, f.Id)
+				store.Listens.Create(&user, f.Id)
 			}
 
 			if shouldFavorite() {
 				store.Episodes.ToggleFavoriteForUser(&user, f.Id)
 			}
 
-			related, err := store.Episodes.Related(f.Id)
+			related, _, err := store.Episodes.Related(f.Id)
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			for _, e := range related {
 				if shouldListen() {
-					models.CreateListen(user, e.Id)
+					store.Listens.Create(&user, e.Id)
 				}
 
 				if shouldFavorite() {

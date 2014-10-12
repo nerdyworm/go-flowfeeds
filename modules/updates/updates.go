@@ -213,7 +213,7 @@ func updateUrl(url string) error {
 		return err
 	}
 
-	feed := models.Feed{
+	feed := &models.Feed{
 		Url:         url,
 		Title:       rssFeed.Title(),
 		Description: rssFeed.Description(),
@@ -221,18 +221,15 @@ func updateUrl(url string) error {
 		Updated:     time.Now(),
 	}
 
-	err = models.EnsureFeed(&feed)
-	if err != nil {
-		log.Fatal(err)
-	}
+	store := datastore.NewDatastore()
 
-	feed, err = models.FindFeedByURL(url)
+	err = store.Feeds.Ensure(feed)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, item := range rssFeed.Items() {
-		episode := models.Episode{
+		episode := &models.Episode{
 			FeedId:      feed.Id,
 			Guid:        item.Guid,
 			Title:       item.Title,
@@ -242,7 +239,7 @@ func updateUrl(url string) error {
 			Published:   item.Published(),
 		}
 
-		err = models.EnsureEpisode(&episode)
+		err = store.Episodes.Ensure(episode)
 		if err != nil {
 			log.Fatal(err)
 		}

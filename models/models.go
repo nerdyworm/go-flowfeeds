@@ -1,12 +1,9 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
-
-	"strings"
 
 	"github.com/go-xorm/xorm"
 	_ "github.com/lib/pq"
@@ -70,37 +67,6 @@ type Feed struct {
 	Updated     time.Time
 }
 
-func EnsureEpisode(episode *Episode) error {
-	_, err := x.Insert(episode)
-	if isDupeErrorOf(err, "episodes_guid_unique") {
-		return nil
-	}
-
-	return err
-}
-
-func EnsureFeed(feed *Feed) error {
-	_, err := x.Insert(feed)
-	if isDupeErrorOf(err, "feeds_url_unique") {
-		return nil
-	}
-
-	return err
-}
-
-func isDupeErrorOf(err error, indexName string) bool {
-	if err == nil {
-		return false
-	}
-
-	message := fmt.Sprintf(`duplicate key value violates unique constraint "%s"`, indexName)
-	if strings.Contains(err.Error(), message) {
-		return true
-	}
-
-	return false
-}
-
 const DefaultPerPage = 10
 
 type ListOptions struct {
@@ -126,52 +92,4 @@ func (o ListOptions) PerPageOrDefault() int {
 		return DefaultPerPage
 	}
 	return o.PerPage
-}
-
-func FindFeedByURL(url string) (Feed, error) {
-	feed := Feed{}
-	_, err := x.Where("url=?", url).Get(&feed)
-	return feed, err
-}
-
-func CreateListen(user User, episodeId int64) (Listen, error) {
-	listen := Listen{UserId: user.Id, EpisodeId: episodeId}
-	_, err := x.Insert(&listen)
-	return listen, err
-}
-
-func FindListensForEpisode(id int64) ([]Listen, []User, error) {
-	listens := []Listen{}
-	users := []User{}
-
-	err := x.Where("episode_id = ?", id).OrderBy("id desc").Limit(20).Find(&listens)
-	if err != nil || len(listens) == 0 {
-		return listens, users, err
-	}
-
-	ids := []int64{}
-	for i := range listens {
-		ids = append(ids, listens[i].UserId)
-	}
-
-	err = x.Table("users").In("id", ids).Find(&users)
-	return listens, users, err
-}
-
-func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
-	favorites := []Favorite{}
-	users := []User{}
-
-	err := x.Where("episode_id = ?", id).OrderBy("id desc").Limit(20).Find(&favorites)
-	if err != nil || len(favorites) == 0 {
-		return favorites, users, err
-	}
-
-	ids := []int64{}
-	for i := range favorites {
-		ids = append(ids, favorites[i].UserId)
-	}
-
-	err = x.Table("users").In("id", ids).Find(&users)
-	return favorites, users, err
 }

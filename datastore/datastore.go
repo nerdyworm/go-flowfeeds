@@ -19,6 +19,8 @@ func Connect(config string) error {
 type Datastore struct {
 	Episodes EpisodesStore
 	Feeds    FeedsStore
+	Users    UsersStore
+	Listens  ListensStore
 	db       *sqlx.DB
 }
 
@@ -31,5 +33,7 @@ func NewDatastore() *Datastore {
 	d.db = DB
 	d.Episodes = &episodesStore{d}
 	d.Feeds = &feedsStore{d}
+	d.Users = &usersStore{d}
+	d.Listens = &listensStore{d}
 	return d
 }
