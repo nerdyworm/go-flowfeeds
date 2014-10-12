@@ -1,7 +1,6 @@
 package episodes
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,19 +11,18 @@ import (
 )
 
 func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
-	p := serializers.Episodes{}
-	p.Episodes = make([]serializers.Episode, 0)
-
-	for i := 0; i < 50; i++ {
-		p.Episodes = append(p.Episodes, serializers.Episode{
-			Id:          int64(i + 1),
-			Title:       fmt.Sprintf("Title %d", i+1),
-			Description: "Description",
-			Url:         "http://example.com/id.mp3",
-		})
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	options := models.ListOptions{
+		PerPage: 24,
+		Page:    page,
 	}
 
-	serializers.JSON(w, p)
+	episodes, feeds, err := ctx.Store.Episodes.ListFor(&ctx.User, options)
+	if err != nil {
+		return err
+	}
+
+	serializers.JSON(w, serializers.NewEpisodes(episodes, feeds))
 	return nil
 }
 
@@ -89,7 +87,7 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewEpisodes(related))
+	serializers.JSON(w, serializers.NewEpisodes(related, []*models.Feed{}))
 	return nil
 }
 

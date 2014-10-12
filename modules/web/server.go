@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/featured"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/listens"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
@@ -54,7 +53,6 @@ func Run(options ServerOptions) {
 
 	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")
 
-	apiRouter.HandleFunc("/featureds", Default(featured.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds/{id}", Default(feeds.Show)).Methods("GET")
 	apiRouter.HandleFunc("/users", Default(users.Create)).Methods("POST")

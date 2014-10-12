@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"github.com/jmoiron/sqlx"
+	"github.com/lann/squirrel"
 	_ "github.com/lib/pq"
 )
 
@@ -19,6 +20,10 @@ type Datastore struct {
 	Episodes EpisodesStore
 	Feeds    FeedsStore
 	db       *sqlx.DB
+}
+
+func (s *Datastore) QueryBuilder() squirrel.StatementBuilderType {
+	return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 }
 
 func NewDatastore() *Datastore {

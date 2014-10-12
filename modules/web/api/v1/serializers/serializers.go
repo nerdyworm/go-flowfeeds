@@ -83,32 +83,17 @@ type Episodes struct {
 	Feeds    []Feed
 }
 
-func NewEpisodes(episodes []*models.Episode) Episodes {
+func NewEpisodes(episodes []*models.Episode, feeds []*models.Feed) Episodes {
 	serializer := Episodes{}
 	serializer.Episodes = make([]Episode, len(episodes))
-	serializer.Feeds = make([]Feed, 0)
+	serializer.Feeds = make([]Feed, len(feeds))
 
-	feeds := map[int64]bool{}
-
-	for i, r := range episodes {
-		serializer.Episodes[i] = NewEpisode(*r)
-		feeds[r.FeedId] = true
+	for i, episode := range episodes {
+		serializer.Episodes[i] = NewEpisode(*episode)
 	}
 
-	feedIds := []int64{}
-
-	for id := range feeds {
-		feedIds = append(feedIds, id)
-	}
-
-	// XXX - should resolve outside of this layer...
-	f, err := models.FindFeedByIds(feedIds)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, feed := range f {
-		serializer.Feeds = append(serializer.Feeds, NewFeed(feed))
+	for i, feed := range feeds {
+		serializer.Feeds[i] = NewFeed(*feed)
 	}
 
 	return serializer
