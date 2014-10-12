@@ -14,13 +14,12 @@ import (
 
 func Run() {
 	log.Println("Faking data")
+	store := datastore.NewDatastore()
 
-	featured, _, _, _, err := models.FeaturedEpisodes(models.User{}, models.ListOptions{})
+	featured, _, err := store.Episodes.ListFor(&models.User{}, models.ListOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	store := datastore.NewDatastore()
 
 	rand.Seed(time.Now().UnixNano())
 

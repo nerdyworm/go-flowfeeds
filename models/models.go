@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
@@ -127,45 +126,6 @@ func (o ListOptions) PerPageOrDefault() int {
 		return DefaultPerPage
 	}
 	return o.PerPage
-}
-
-func FeaturedEpisodes(user User, options ListOptions) ([]Episode, []Feed, []Listen, []Favorite, error) {
-	episodes := []Episode{}
-	feeds := []Feed{}
-	listens := []Listen{}
-	favorites := []Favorite{}
-
-	log.Println(options)
-
-	err := x.OrderBy("published desc").Limit(options.PerPageOrDefault(), options.Offset()).Find(&episodes)
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
-	episodeIds := []int64{}
-	feedIds := []int64{}
-
-	for _, episode := range episodes {
-		feedIds = append(feedIds, episode.FeedId)
-		episodeIds = append(episodeIds, episode.Id)
-	}
-
-	if len(feedIds) > 0 {
-		err = x.In("id", feedIds).Find(&feeds)
-	}
-
-	if len(episodeIds) > 0 {
-		err = x.Where("user_id = ?", user.Id).In("episode_id", episodeIds).Find(&listens)
-		err = x.Where("user_id = ?", user.Id).In("episode_id", episodeIds).Find(&favorites)
-	}
-
-	return episodes, feeds, listens, favorites, err
-}
-
-func FindFeedByIds(ids []int64) ([]Feed, error) {
-	feeds := []Feed{}
-	err := x.In("id", ids).Find(&feeds)
-	return feeds, err
 }
 
 func FindFeedByURL(url string) (Feed, error) {

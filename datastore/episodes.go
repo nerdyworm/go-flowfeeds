@@ -62,49 +62,51 @@ func (s *episodesStore) Related(id int64) ([]*models.Episode, error) {
 }
 
 func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models.Episode) error {
-	episodeIds := []int64{}
+	builder := s.QueryBuilder()
+
+	listens := []*models.Listen{}
+	episodesToListens := make(map[int64]bool)
+
+	favorites := []*models.Favorite{}
+	episodesToFavorites := make(map[int64]bool)
+
+	ids := []int64{}
 	for _, episode := range episodes {
-		episodeIds = append(episodeIds, episode.Id)
+		ids = append(ids, episode.Id)
 	}
 
-	builder := s.QueryBuilder().
-		Select("*").From("listen").
-		Where(squirrel.Eq{"episode_id": episodeIds, "user_id": user.Id})
+	listensQuery := builder.Select("*").From("listen").
+		Where(squirrel.Eq{"episode_id": ids, "user_id": user.Id})
 
-	query, args, err := builder.ToSql()
+	query, args, err := listensQuery.ToSql()
 	if err != nil {
 		return err
 	}
 
-	listens := []*models.Listen{}
 	err = s.db.Select(&listens, query, args...)
 	if err != nil {
 		return err
 	}
 
-	episodesToListens := make(map[int64]bool)
+	favoritesQuery := builder.Select("*").From("favorite").
+		Where(squirrel.Eq{"episode_id": ids, "user_id": user.Id})
+
+	query, args, err = favoritesQuery.ToSql()
+	if err != nil {
+		return err
+	}
+
+	err = s.db.Select(&favorites, query, args...)
+	if err != nil {
+		return err
+	}
+
 	for _, listen := range listens {
 		if _, ok := episodesToListens[listen.EpisodeId]; !ok {
 			episodesToListens[listen.EpisodeId] = true
 		}
 	}
 
-	builder = s.QueryBuilder().
-		Select("*").From("favorite").
-		Where(squirrel.Eq{"episode_id": episodeIds, "user_id": user.Id})
-
-	query, args, err = builder.ToSql()
-	if err != nil {
-		return err
-	}
-
-	favorites := []*models.Favorite{}
-	err = s.db.Select(&favorites, query, args...)
-	if err != nil {
-		return err
-	}
-
-	episodesToFavorites := make(map[int64]bool)
 	for _, favorite := range favorites {
 		if _, ok := episodesToFavorites[favorite.EpisodeId]; !ok {
 			episodesToFavorites[favorite.EpisodeId] = true
@@ -139,23 +141,14 @@ func (s *episodesStore) ListFor(user *models.User, options models.ListOptions) (
 	}
 
 	if len(feedIds) > 0 {
-		builder := s.QueryBuilder().
-			Select("*").From("feed").
-			Where(squirrel.Eq{"id": feedIds})
-
-		query, args, err := builder.ToSql()
-		if err != nil {
-			return episodes, feeds, err
-		}
-
-		err = s.db.Select(&feeds, query, args...)
+		feeds, err = s.Feeds.GetIds(feedIds)
 		if err != nil {
 			return episodes, feeds, err
 		}
 	}
 
 	if len(episodeIds) > 0 {
-		s.setEpisodeStateFor(user, episodes)
+		err = s.setEpisodeStateFor(user, episodes)
 	}
 
 	return episodes, feeds, err
