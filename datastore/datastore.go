@@ -16,7 +16,8 @@ func Connect(config string) error {
 }
 
 type Datastore struct {
-	Episodes EpisodesService
+	Episodes EpisodesStore
+	Feeds    FeedsStore
 	db       *sqlx.DB
 }
 
@@ -24,5 +25,6 @@ func NewDatastore() *Datastore {
 	d := &Datastore{}
 	d.db = DB
 	d.Episodes = &episodesStore{d}
+	d.Feeds = &feedsStore{d}
 	return d
 }

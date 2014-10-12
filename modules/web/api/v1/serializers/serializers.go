@@ -39,10 +39,10 @@ type EpisodeLinks struct {
 	Related   string `json:"related"`
 }
 
-func NewShowEpisode(episode models.Episode, feed models.Feed) ShowEpisode {
+func NewShowEpisode(episode *models.Episode, feed *models.Feed) ShowEpisode {
 	return ShowEpisode{
-		Episode: NewEpisode(episode),
-		Feeds:   []Feed{NewFeed(feed)},
+		Episode: NewEpisode(*episode),
+		Feeds:   []Feed{NewFeed(*feed)},
 	}
 }
 
@@ -83,15 +83,15 @@ type Episodes struct {
 	Feeds    []Feed
 }
 
-func NewEpisodes(teasers []models.Episode) Episodes {
+func NewEpisodes(episodes []*models.Episode) Episodes {
 	serializer := Episodes{}
-	serializer.Episodes = make([]Episode, len(teasers))
+	serializer.Episodes = make([]Episode, len(episodes))
 	serializer.Feeds = make([]Feed, 0)
 
 	feeds := map[int64]bool{}
 
-	for i, r := range teasers {
-		serializer.Episodes[i] = NewEpisode(r)
+	for i, r := range episodes {
+		serializer.Episodes[i] = NewEpisode(*r)
 		feeds[r.FeedId] = true
 	}
 

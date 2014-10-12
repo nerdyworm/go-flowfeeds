@@ -47,19 +47,14 @@ type Episode struct {
 
 type Listen struct {
 	Id        int64
-	UserId    int64
-	EpisodeId int64
+	UserId    int64 `db:"user_id"`
+	EpisodeId int64 `db:"episode_id"`
 }
 
 type Favorite struct {
 	Id        int64
-	UserId    int64
-	EpisodeId int64
-}
-
-type Top100 struct {
-	Rank   int `json:"Id"`
-	Teaser int64
+	UserId    int64 `db:"user_id"`
+	EpisodeId int64 `db:"episode_id"`
 }
 
 type Featured struct {
@@ -167,18 +162,6 @@ func FeaturedEpisodes(user User, options ListOptions) ([]Episode, []Feed, []List
 	return episodes, feeds, listens, favorites, err
 }
 
-func Feeds() ([]Feed, error) {
-	feeds := []Feed{}
-	err := x.OrderBy("lower(title) asc").Find(&feeds)
-	return feeds, err
-}
-
-func FindFeedById(id int64) (Feed, error) {
-	feed := Feed{}
-	_, err := x.Id(id).Get(&feed)
-	return feed, err
-}
-
 func FindFeedByIds(ids []int64) ([]Feed, error) {
 	feeds := []Feed{}
 	err := x.In("id", ids).Find(&feeds)
@@ -189,16 +172,6 @@ func FindFeedByURL(url string) (Feed, error) {
 	feed := Feed{}
 	_, err := x.Where("url=?", url).Get(&feed)
 	return feed, err
-}
-
-func FindRelatedEpisodes(episodeId int64) ([]Episode, error) {
-	related := []Episode{}
-	err := x.Where("id <> ?", episodeId).OrderBy("random()").Limit(10).Find(&related)
-	if err != nil {
-		return nil, err
-	}
-
-	return related, err
 }
 
 func CreateListen(user User, episodeId int64) (Listen, error) {
@@ -225,30 +198,6 @@ func FindListensForEpisode(id int64) ([]Listen, []User, error) {
 	return listens, users, err
 }
 
-func ToggleFavorite(user User, episodeId int64) error {
-	favorite := Favorite{UserId: user.Id, EpisodeId: episodeId}
-	_, err := x.Where("user_id = ? and episode_id = ?", user.Id, episodeId).Get(&favorite)
-
-	if favorite.Id == 0 {
-		_, err = x.Insert(&favorite)
-	} else {
-		_, err = x.Exec("delete from favorite where user_id = ? and episode_id = ?", user.Id, episodeId)
-	}
-
-	return err
-}
-
-func CreateFavorite(user User, episodeId int64) (Favorite, error) {
-	favorite := Favorite{UserId: user.Id, EpisodeId: episodeId}
-	_, err := x.Insert(&favorite)
-	return favorite, err
-}
-
-func DeleteFavorite(user User, id int64) error {
-	_, err := x.Where("user_id = ?", user.Id).Delete(Favorite{Id: id})
-	return err
-}
-
 func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 	favorites := []Favorite{}
 	users := []User{}
@@ -265,10 +214,4 @@ func FindFavoritesForEpisode(id int64) ([]Favorite, []User, error) {
 
 	err = x.Table("users").In("id", ids).Find(&users)
 	return favorites, users, err
-}
-
-func FindFavoriteById(id int64) (Favorite, error) {
-	favorite := Favorite{}
-	_, err := x.Id(id).Get(&favorite)
-	return favorite, err
 }

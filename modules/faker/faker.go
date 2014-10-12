@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 )
 
@@ -18,6 +19,8 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	store := datastore.NewDatastore()
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -31,10 +34,10 @@ func Run() {
 			}
 
 			if shouldFavorite() {
-				models.CreateFavorite(user, f.Id)
+				store.Episodes.ToggleFavoriteForUser(&user, f.Id)
 			}
 
-			related, err := models.FindRelatedEpisodes(f.Id)
+			related, err := store.Episodes.Related(f.Id)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -45,7 +48,7 @@ func Run() {
 				}
 
 				if shouldFavorite() {
-					models.CreateFavorite(user, e.Id)
+					store.Episodes.ToggleFavoriteForUser(&user, f.Id)
 				}
 			}
 		}

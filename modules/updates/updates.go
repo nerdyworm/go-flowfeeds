@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/rss"
 
@@ -49,12 +50,14 @@ func makeImagesFromFeeds() {
 		go imageWorker(w, feeds, results)
 	}
 
-	f, _ := models.Feeds()
+	store := datastore.NewDatastore()
+
+	f, _ := store.Feeds.List()
 	total := len(f)
 
 	go func() {
 		for _, feed := range f {
-			feeds <- feed
+			feeds <- *feed
 		}
 		close(feeds)
 	}()

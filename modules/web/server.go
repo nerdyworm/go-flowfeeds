@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/favorites"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/featured"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/listens"
@@ -54,8 +53,6 @@ func Run(options ServerOptions) {
 	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
 
 	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")
-	apiRouter.HandleFunc("/favorites", Default(favorites.Create)).Methods("POST")
-	apiRouter.HandleFunc("/favorites/{id}", Default(favorites.Delete)).Methods("DELETE")
 
 	apiRouter.HandleFunc("/featureds", Default(featured.Index)).Methods("GET")
 	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")
