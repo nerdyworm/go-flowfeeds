@@ -15,7 +15,7 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/users"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
-
+	"github.com/codegangsta/controller"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -53,8 +53,8 @@ func Run(options ServerOptions) {
 
 	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")
 
-	apiRouter.HandleFunc("/feeds", Default(feeds.Index)).Methods("GET")
-	apiRouter.HandleFunc("/feeds/{id}", Default(feeds.Show)).Methods("GET")
+	apiRouter.Handle("/feeds", controller.Action((*feeds.FeedsController).Index)).Methods("GET")
+	apiRouter.Handle("/feeds/{id}", controller.Action((*feeds.FeedsController).Show)).Methods("GET")
 	apiRouter.HandleFunc("/users", Default(users.Create)).Methods("POST")
 	apiRouter.HandleFunc("/users/{id}", Default(users.Show)).Methods("GET")
 	apiRouter.HandleFunc("/sessions", Default(sessions.Create)).Methods("POST")

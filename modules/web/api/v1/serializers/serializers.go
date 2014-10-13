@@ -134,7 +134,7 @@ func NewShowUser(user models.User) ShowUser {
 }
 
 type FeedShowSerializer struct {
-	Feed models.Feed
+	Feed Feed
 }
 
 func JSON(w http.ResponseWriter, v interface{}) error {
@@ -267,4 +267,14 @@ func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites 
 	}
 
 	return serializer
+}
+
+type ShowFeed struct {
+	Feed Feed
+}
+
+func NewShowFeed(feed *models.Feed) ShowFeed {
+	return ShowFeed{
+		Feed: NewFeed(*feed),
+	}
 }

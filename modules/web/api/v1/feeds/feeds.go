@@ -1,20 +1,50 @@
 package feeds
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
+	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
+	"github.com/codegangsta/controller"
 	"github.com/gorilla/mux"
 )
 
-// TODO: remove serilizer stuff from here into serializers
-func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+type ApplicationController struct {
+	controller.Base
+	Context ctx.Context
+	Store   *datastore.Datastore
+}
+
+func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) error {
+	context := ctx.Context{}
+	context.Store = datastore.NewDatastore()
+
+	user, err := sessions.CurrentUser(r, context.Store)
+	if err != nil {
+		log.Println("handlers.Default session.CurrentUser", err)
+	} else {
+		context.User = user
+		log.Printf("current user: %d\n", user.Id)
+	}
+	c.Context = context
+	c.Store = context.Store
+
+	return c.Base.Init(rw, r)
+}
+
+type FeedsController struct {
+	ApplicationController
+}
+
+func (c *FeedsController) Index() error {
 	serializer := serializers.FeedsSerializer{}
 	serializer.Feeds = make([]serializers.Feed, 0)
 
-	feeds, err := ctx.Store.Feeds.List()
+	feeds, err := c.Store.Feeds.List()
 	if err != nil {
 		return err
 	}
@@ -23,22 +53,19 @@ func Index(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		serializer.Feeds = append(serializer.Feeds, serializers.NewFeed(*feed))
 	}
 
-	serializers.JSON(w, serializer)
-	return nil
+	return serializers.JSON(c.ResponseWriter, serializer)
 }
 
-func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+func (c *FeedsController) Show() error {
+	id, err := strconv.Atoi(mux.Vars(c.Request)["id"])
 	if err != nil {
 		return err
 	}
 
-	feed, err := ctx.Store.Feeds.Get(int64(id))
+	feed, err := c.Store.Feeds.Get(int64(id))
 	if err != nil {
 		return err
 	}
 
-	serializer := serializers.FeedShowSerializer{Feed: *feed}
-	serializers.JSON(w, serializer)
-	return nil
+	return serializers.JSON(c.ResponseWriter, serializers.NewShowFeed(feed))
 }
