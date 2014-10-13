@@ -29,7 +29,7 @@ func Default(handler ApplicationHandler) http.HandlerFunc {
 		context := ctx.Context{}
 		context.Store = datastore.NewDatastore()
 
-		user, err := sessions.CurrentUser(r)
+		user, err := sessions.CurrentUser(r, context.Store)
 		if err != nil {
 			log.Println("handlers.Default session.CurrentUser", err)
 		} else {

@@ -65,6 +65,8 @@ func shouldListen() bool {
 func createNewUsers() []models.User {
 	users := []models.User{}
 
+	store := datastore.NewDatastore()
+
 	count := rand.Intn(1000)
 	for i := 0; i < count; i++ {
 		output, err := exec.Command("uuidgen").Output()
@@ -73,7 +75,9 @@ func createNewUsers() []models.User {
 		}
 
 		uuid := strings.ToLower(strings.TrimSpace(string(output)))
-		user, err := models.CreateUser(fmt.Sprintf("%s@flowfeeds.com", uuid), uuid)
+
+		user := models.NewUser(fmt.Sprintf("%s@flowfeeds.com", uuid), uuid)
+		err = store.Users.Insert(&user)
 		if err != nil {
 			log.Fatal(err)
 		}

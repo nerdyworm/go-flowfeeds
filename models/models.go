@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
@@ -13,6 +14,7 @@ var x *xorm.Engine
 
 var (
 	PasswordCost = bcrypt.DefaultCost
+	ErrNotFound  = errors.New("Record not found")
 )
 
 func Connect(config string) error {

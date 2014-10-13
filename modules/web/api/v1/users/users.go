@@ -64,7 +64,8 @@ func Create(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 
 	params := createUserRequest.User
 
-	user, err := models.CreateUser(params.Email, params.Password)
+	user := models.NewUser(params.Email, params.Password)
+	err = ctx.Store.Users.Insert(&user)
 	if err != nil {
 		log.Println("users.Create models.UserCreate", err)
 		return err
@@ -81,11 +82,11 @@ func Show(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	user, err := models.FindUserById(int64(id))
+	user, err := ctx.Store.Users.Get(int64(id))
 	if err != nil {
 		return err
 	}
 
-	serializers.JSON(w, serializers.NewShowUser(user))
+	serializers.JSON(w, serializers.NewShowUser(*user))
 	return nil
 }

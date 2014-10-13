@@ -92,6 +92,11 @@ func Related(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
 }
 
 func ToggleFavorite(ctx ctx.Context, w http.ResponseWriter, r *http.Request) error {
+	if ctx.User.Id == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return nil
+	}
+
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		return err

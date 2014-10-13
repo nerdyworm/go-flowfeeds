@@ -6,10 +6,25 @@ import (
 )
 
 type UsersStore interface {
+	Get(id int64) (*models.User, error)
 	GetIds(ids []int64) ([]*models.User, error)
+	Insert(*models.User) error
 }
 
 type usersStore struct{ *Datastore }
+
+func (s *usersStore) Get(id int64) (*models.User, error) {
+	users, err := s.GetIds([]int64{id})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return nil, models.ErrNotFound
+	}
+
+	return users[0], nil
+}
 
 func (s *usersStore) GetIds(ids []int64) ([]*models.User, error) {
 	users := []*models.User{}
@@ -38,4 +53,10 @@ func (s *usersStore) usersByIdsQuery(ids []int64) (string, []interface{}) {
 	}
 
 	return query, args
+}
+
+func (s *usersStore) Insert(user *models.User) error {
+	row := s.db.QueryRow("insert into users (email, encrypted_password) values($1,$2) returning id",
+		user.Email, user.EncryptedPassword)
+	return row.Scan(&user.Id)
 }

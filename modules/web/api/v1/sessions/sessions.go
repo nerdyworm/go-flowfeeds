@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/sessions"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/ctx"
@@ -103,19 +104,23 @@ func signout(w http.ResponseWriter, r *http.Request) error {
 	return session.Save(r, w)
 }
 
-func CurrentUser(r *http.Request) (models.User, error) {
+func CurrentUser(r *http.Request, store *datastore.Datastore) (models.User, error) {
 	session, err := sessionStore.Get(r, "__flowfeeds_session")
 	if err != nil {
 		return models.User{}, err
 	}
 
 	if id, ok := session.Values[USER_SESSION_KEY]; ok {
-		user, err := models.FindUserById(id.(int64))
-		if err != nil {
-			return user, err
+		user, err := store.Users.Get(id.(int64))
+		if err == models.ErrNotFound {
+			return models.User{}, nil
 		}
 
-		return user, err
+		if err != nil {
+			return models.User{}, err
+		}
+
+		return *user, err
 
 	}
 
