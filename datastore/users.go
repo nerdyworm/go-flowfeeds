@@ -13,6 +13,10 @@ type usersStore struct{ *Datastore }
 
 func (s *usersStore) GetIds(ids []int64) ([]*models.User, error) {
 	users := []*models.User{}
+	if len(ids) == 0 {
+		return users, nil
+	}
+
 	query, args := s.usersByIdsQuery(ids)
 	err := s.db.Select(&users, query, args...)
 	if err != nil {
@@ -24,7 +28,7 @@ func (s *usersStore) GetIds(ids []int64) ([]*models.User, error) {
 
 func (s *usersStore) usersByIdsQuery(ids []int64) (string, []interface{}) {
 	usersQuery := s.QueryBuilder().
-		Select("id,email").
+		Select("id, email").
 		From("users").
 		Where(squirrel.Eq{"id": ids})
 
