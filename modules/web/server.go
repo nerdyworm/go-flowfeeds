@@ -7,10 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/episodes"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/feeds"
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/listens"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/sessions"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web/api/v1/users"
@@ -44,14 +41,14 @@ func Run(options ServerOptions) {
 	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir(options.RootEmberAppPath)))
 
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
-	apiRouter.HandleFunc("/episodes/{id}/favorites", Default(episodes.Favorites)).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}/listens", Default(episodes.Listens)).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}/related", Default(episodes.Related)).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.Show)).Methods("GET")
-	apiRouter.HandleFunc("/episodes/{id}", Default(episodes.ToggleFavorite)).Methods("PUT")
-	apiRouter.HandleFunc("/episodes", Default(episodes.Index)).Methods("GET")
+	apiRouter.Handle("/episodes/{id}/favorites", controller.Action((*feeds.EpisoidesController).Favorites)).Methods("GET")
+	apiRouter.Handle("/episodes/{id}/listens", controller.Action((*feeds.EpisoidesController).Listens)).Methods("GET")
+	apiRouter.Handle("/episodes/{id}/related", controller.Action((*feeds.EpisoidesController).Related)).Methods("GET")
+	apiRouter.Handle("/episodes/{id}", controller.Action((*feeds.EpisoidesController).Show)).Methods("GET")
+	apiRouter.Handle("/episodes/{id}", controller.Action((*feeds.EpisoidesController).Update)).Methods("PUT")
+	apiRouter.Handle("/episodes", controller.Action((*feeds.EpisoidesController).Index)).Methods("GET")
 
-	apiRouter.HandleFunc("/listens", Default(listens.Create)).Methods("POST")
+	apiRouter.Handle("/listens", controller.Action((*feeds.ListensController).Create)).Methods("POST")
 
 	apiRouter.Handle("/feeds", controller.Action((*feeds.FeedsController).Index)).Methods("GET")
 	apiRouter.Handle("/feeds/{id}", controller.Action((*feeds.FeedsController).Show)).Methods("GET")

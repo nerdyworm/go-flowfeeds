@@ -74,7 +74,7 @@ type FeaturedsSerializer struct {
 	Episodes  []Episode
 }
 
-type FeedsSerializer struct {
+type Feeds struct {
 	Feeds []Feed
 }
 
@@ -277,4 +277,13 @@ func NewShowFeed(feed *models.Feed) ShowFeed {
 	return ShowFeed{
 		Feed: NewFeed(*feed),
 	}
+}
+
+func NewFeeds(feeds []*models.Feed) Feeds {
+	serializer := Feeds{}
+	serializer.Feeds = make([]Feed, len(feeds))
+	for i, feed := range feeds {
+		serializer.Feeds[i] = NewFeed(*feed)
+	}
+	return serializer
 }
