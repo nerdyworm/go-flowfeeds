@@ -92,9 +92,9 @@ func makeImages(feed models.Feed) error {
 	image.Close()
 	log.Printf("got %s", feed.Image)
 
-	auth := aws.Auth{os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), ""}
+	auth := aws.Auth{config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY, ""}
 	sss := s3.New(auth, aws.USEast)
-	bucket := sss.Bucket(config.S3Bucket)
+	bucket := sss.Bucket(config.BUCKET)
 
 	/// THUMBNAILS
 	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)

@@ -60,7 +60,7 @@ func (c *HomeController) manifest() (string, error) {
 }
 
 func (c *HomeController) html() (string, error) {
-	index, err := ioutil.ReadFile(config.EmberApp + "/index.html")
+	index, err := ioutil.ReadFile(config.EMBER_APP + "/index.html")
 	if err != nil {
 		return "", err
 	}

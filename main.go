@@ -13,13 +13,7 @@ import (
 )
 
 func main() {
-	pgConfig := os.Getenv("DATABASE_CONFIG")
-
-	if pgConfig == "" {
-		pgConfig = config.PgConfig
-	}
-
-	err := datastore.Connect(pgConfig)
+	err := datastore.Connect(config.PG_CONFIG)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -55,15 +49,7 @@ func main() {
 		cli.Command{
 			Name:        "server",
 			Description: "This command will start the http server",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:   "ember",
-					Usage:  "tells the http server where it can find the index.html file",
-					EnvVar: "EMBER_APP_PATH",
-				},
-			},
 			Action: func(c *cli.Context) {
-				config.EmberApp = c.String("ember")
 				web.Run()
 			},
 		},

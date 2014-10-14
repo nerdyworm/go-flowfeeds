@@ -53,8 +53,8 @@ func NewEpisode(episode models.Episode) Episode {
 		Title:          episode.Title,
 		Description:    episode.Description,
 		Url:            episode.Url,
-		Thumb:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, episode.FeedId),
-		Cover:          fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, episode.FeedId),
+		Thumb:          fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, episode.FeedId),
+		Cover:          fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
 		Published:      episode.Published,
 		Favorited:      episode.Favorited,
 		Listened:       episode.Listened,
@@ -109,8 +109,8 @@ func NewFeed(feed models.Feed) Feed {
 		Title:       feed.Title,
 		Description: feed.Description,
 		Url:         feed.Url,
-		Thumb:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/thumb-x2.jpg", config.S3Bucket, feed.Id),
-		Cover:       fmt.Sprintf("http://s3.amazonaws.com/%s/feeds/%d/cover.jpg", config.S3Bucket, feed.Id),
+		Thumb:       fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, feed.Id),
+		Cover:       fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
 	}
 }
 

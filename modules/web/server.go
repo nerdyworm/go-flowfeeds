@@ -14,8 +14,8 @@ import (
 )
 
 func Run() {
-	if _, err := os.Stat(config.EmberApp + "/index.html"); os.IsNotExist(err) {
-		log.Printf("could not find the ember app's index.html in `%s`", config.EmberApp)
+	if _, err := os.Stat(config.EMBER_APP + "/index.html"); os.IsNotExist(err) {
+		log.Printf("could not find the ember app's index.html in `%s`", config.EMBER_APP)
 		log.Fatal(err)
 	}
 
@@ -28,7 +28,7 @@ func Run() {
 	r.Handle("/", controller.Action((*controllers.HomeController).Index))
 	r.NotFoundHandler = controller.Action((*controllers.HomeController).Index)
 
-	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir(config.EmberApp)))
+	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir(config.EMBER_APP)))
 
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
 	apiRouter.Handle("/episodes/{id}/favorites", controller.Action((*controllers.EpisoidesController).Favorites)).Methods("GET")
