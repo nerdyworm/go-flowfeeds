@@ -5,27 +5,20 @@ import (
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
-
-	"github.com/go-xorm/xorm"
-	_ "github.com/lib/pq"
 )
-
-var x *xorm.Engine
 
 var (
 	PasswordCost = bcrypt.DefaultCost
 	ErrNotFound  = errors.New("Record not found")
 )
 
-func Connect(config string) error {
-	var err error
-	x, err = xorm.NewEngine("postgres", config)
-	x.ShowSQL = true
-	return err
-}
-
-func Close() {
-	x.Close()
+type Feed struct {
+	Id          int64
+	Title       string
+	Description string
+	Url         string
+	Image       string
+	Updated     time.Time
 }
 
 type Episode struct {
@@ -39,8 +32,8 @@ type Episode struct {
 	Published      time.Time
 	ListensCount   int  `db:"listens_count"`
 	FavoritesCount int  `db:"favorites_count"`
-	Favorited      bool `xorm:"-",db:"-"`
-	Listened       bool `xorm:"-",db:"-"`
+	Favorited      bool `db:"-"`
+	Listened       bool `db:"-"`
 }
 
 type Listen struct {
@@ -55,43 +48,23 @@ type Favorite struct {
 	EpisodeId int64 `db:"episode_id"`
 }
 
-type Featured struct {
-	Rank    int `json:"Id"`
-	Episode int64
+type User struct {
+	Id                int64
+	Email             string
+	EncryptedPassword []byte
 }
 
-type Feed struct {
-	Id          int64
-	Title       string
-	Description string
-	Url         string
-	Image       string
-	Updated     time.Time
+func (user User) CheckPassword(password string) error {
+	return bcrypt.CompareHashAndPassword(user.EncryptedPassword, []byte(password))
 }
 
-const DefaultPerPage = 10
-
-type ListOptions struct {
-	PerPage int
-	Page    int
+func (user *User) SetPassword(password string) (err error) {
+	user.EncryptedPassword, err = bcrypt.GenerateFromPassword([]byte(password), PasswordCost)
+	return err
 }
 
-func (o ListOptions) PageOrDefault() int {
-	if o.Page <= 0 {
-		return 1
-	}
-
-	return o.Page
-
-}
-
-func (o ListOptions) Offset() int {
-	return (o.PageOrDefault() - 1) * o.PerPageOrDefault()
-}
-
-func (o ListOptions) PerPageOrDefault() int {
-	if o.PerPage <= 0 {
-		return DefaultPerPage
-	}
-	return o.PerPage
+func NewUser(email, password string) User {
+	user := User{Email: email}
+	user.SetPassword(password)
+	return user
 }

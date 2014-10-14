@@ -6,7 +6,6 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/faker"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/updates"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web"
@@ -20,13 +19,7 @@ func main() {
 		pgConfig = config.PgConfig
 	}
 
-	err := models.Connect(pgConfig)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer models.Close()
-
-	err = datastore.Connect(pgConfig)
+	err := datastore.Connect(pgConfig)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -70,9 +63,8 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) {
-				web.Run(web.ServerOptions{
-					c.String("ember"),
-				})
+				config.EmberApp = c.String("ember")
+				web.Run()
 			},
 		},
 	}

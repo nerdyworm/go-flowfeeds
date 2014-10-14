@@ -37,3 +37,30 @@ func NewDatastore() *Datastore {
 	d.Listens = &listensStore{d}
 	return d
 }
+
+const DefaultPerPage = 10
+
+type ListOptions struct {
+	PerPage int
+	Page    int
+}
+
+func (o ListOptions) PageOrDefault() int {
+	if o.Page <= 0 {
+		return 1
+	}
+
+	return o.Page
+
+}
+
+func (o ListOptions) Offset() int {
+	return (o.PageOrDefault() - 1) * o.PerPageOrDefault()
+}
+
+func (o ListOptions) PerPageOrDefault() int {
+	if o.PerPage <= 0 {
+		return DefaultPerPage
+	}
+	return o.PerPage
+}

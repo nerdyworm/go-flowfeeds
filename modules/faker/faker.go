@@ -16,7 +16,7 @@ func Run() {
 	log.Println("Faking data")
 	store := datastore.NewDatastore()
 
-	featured, _, err := store.Episodes.ListFor(&models.User{}, models.ListOptions{})
+	featured, _, err := store.Episodes.ListFor(&models.User{}, datastore.ListOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}

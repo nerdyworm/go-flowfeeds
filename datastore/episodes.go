@@ -10,7 +10,7 @@ type EpisodesStore interface {
 	Get(id int64) (*models.Episode, error)
 	GetForUser(*models.User, int64) (*models.Episode, error)
 	Related(id int64) ([]*models.Episode, []*models.Feed, error)
-	ListFor(*models.User, models.ListOptions) ([]*models.Episode, []*models.Feed, error)
+	ListFor(*models.User, ListOptions) ([]*models.Episode, []*models.Feed, error)
 	Listens(id int64) ([]*models.Listen, []*models.User, error)
 	Favorites(id int64) ([]*models.Favorite, []*models.User, error)
 	ToggleFavoriteForUser(*models.User, int64) error
@@ -76,7 +76,7 @@ func (s *episodesStore) Related(id int64) ([]*models.Episode, []*models.Feed, er
 	return episodes, feeds, err
 }
 
-func (s *episodesStore) ListFor(user *models.User, options models.ListOptions) ([]*models.Episode, []*models.Feed, error) {
+func (s *episodesStore) ListFor(user *models.User, options ListOptions) ([]*models.Episode, []*models.Feed, error) {
 	episodes := []*models.Episode{}
 	feeds := []*models.Feed{}
 

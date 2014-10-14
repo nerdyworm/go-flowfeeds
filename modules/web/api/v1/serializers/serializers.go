@@ -68,12 +68,6 @@ func NewEpisode(episode models.Episode) Episode {
 	}
 }
 
-type FeaturedsSerializer struct {
-	Featureds []models.Featured
-	Feeds     []Feed
-	Episodes  []Episode
-}
-
 type Feeds struct {
 	Feeds []Feed
 }
