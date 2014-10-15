@@ -8,7 +8,7 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/faker"
 	"bitbucket.org/nerdyworm/go-flowfeeds/modules/updates"
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/web"
+	"bitbucket.org/nerdyworm/go-flowfeeds/web"
 	"github.com/codegangsta/cli"
 )
 

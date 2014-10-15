@@ -13,7 +13,6 @@ import (
 )
 
 func Run() {
-	log.Println("Faking data")
 	store := datastore.NewDatastore()
 
 	featured, _, err := store.Episodes.ListFor(&models.User{}, datastore.ListOptions{})
@@ -67,7 +66,7 @@ func createNewUsers() []models.User {
 
 	store := datastore.NewDatastore()
 
-	count := rand.Intn(1000)
+	count := rand.Intn(100)
 	for i := 0; i < count; i++ {
 		output, err := exec.Command("uuidgen").Output()
 		if err != nil {
