@@ -10,6 +10,8 @@ var (
 	ENV                   = ""
 	AWS_ACCESS_KEY_ID     = ""
 	AWS_SECRET_ACCESS_KEY = ""
+	SESSION_AUTH_KEY      = ""
+	SESSION_CRYPT_KEY     = ""
 )
 
 func init() {
@@ -26,4 +28,7 @@ func init() {
 	ENV = viper.GetString("ENV")
 	AWS_ACCESS_KEY_ID = viper.GetString("AWS_ACCESS_KEY_ID")
 	AWS_SECRET_ACCESS_KEY = viper.GetString("AWS_SECRET_ACCESS_KEY")
+
+	SESSION_AUTH_KEY = viper.GetString("SESSION_AUTH_KEY")
+	SESSION_CRYPT_KEY = viper.GetString("SESSION_CRYPT_KEY")
 }

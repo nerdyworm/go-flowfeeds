@@ -3,9 +3,9 @@ package sessions
 import (
 	"errors"
 	"net/http"
-
 	"github.com/gorilla/sessions"
 
+	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 )
@@ -15,7 +15,10 @@ const (
 )
 
 var (
-	sessionStore = sessions.NewCookieStore([]byte("1234568900"))
+	sessionStore = sessions.NewCookieStore(
+		[]byte(config.SESSION_AUTH_KEY),
+		[]byte(config.SESSION_CRYPT_KEY),
+	)
 )
 
 func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
