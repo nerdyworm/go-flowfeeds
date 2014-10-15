@@ -18,7 +18,7 @@ var (
 	sessionStore = sessions.NewCookieStore([]byte("1234568900"))
 )
 
-func Signin(user models.User, w http.ResponseWriter, r *http.Request) error {
+func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
 	session, err := sessionStore.Get(r, "__flowfeeds_session")
 	if err != nil {
 		return err

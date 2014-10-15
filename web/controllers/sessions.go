@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
@@ -21,12 +20,12 @@ type CreateSessionRequest struct {
 }
 
 func (c *SessionsController) Create() error {
-	createSessionRequest := CreateSessionRequest{}
-	err := json.NewDecoder(c.Request.Body).Decode(&createSessionRequest)
+	request := CreateSessionRequest{}
+	err := c.Decode(&request)
 	if err != nil {
 		return err
 	}
-	params := createSessionRequest.Session
+	params := request.Session
 
 	if params.Email == "" || params.Password == "" {
 		c.ResponseWriter.WriteHeader(422)
@@ -49,13 +48,13 @@ func (c *SessionsController) Create() error {
 		return nil
 	}
 
-	err = sessions.Signin(*user, c.ResponseWriter, c.Request)
+	err = sessions.Signin(user, c.ResponseWriter, c.Request)
 	if err != nil {
 		return err
 	}
 
 	serializer := serializers.ShowUser{
-		serializers.NewUser(*user),
+		serializers.NewUser(user),
 	}
 
 	return c.JSON(http.StatusCreated, serializer)

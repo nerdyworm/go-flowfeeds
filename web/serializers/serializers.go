@@ -12,11 +12,6 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/web/helpers"
 )
 
-type ShowEpisode struct {
-	Episode Episode
-	Feeds   []Feed
-}
-
 type Episode struct {
 	Id             int64
 	Feed           int64
@@ -39,14 +34,19 @@ type EpisodeLinks struct {
 	Related   string `json:"related"`
 }
 
+type ShowEpisode struct {
+	Episode Episode
+	Feeds   []Feed
+}
+
 func NewShowEpisode(episode *models.Episode, feed *models.Feed) ShowEpisode {
 	return ShowEpisode{
-		Episode: NewEpisode(*episode),
-		Feeds:   []Feed{NewFeed(*feed)},
+		Episode: NewEpisode(episode),
+		Feeds:   []Feed{NewFeed(feed)},
 	}
 }
 
-func NewEpisode(episode models.Episode) Episode {
+func NewEpisode(episode *models.Episode) Episode {
 	return Episode{
 		Id:             episode.Id,
 		Feed:           episode.FeedId,
@@ -83,11 +83,11 @@ func NewEpisodes(episodes []*models.Episode, feeds []*models.Feed) Episodes {
 	serializer.Feeds = make([]Feed, len(feeds))
 
 	for i, episode := range episodes {
-		serializer.Episodes[i] = NewEpisode(*episode)
+		serializer.Episodes[i] = NewEpisode(episode)
 	}
 
 	for i, feed := range feeds {
-		serializer.Feeds[i] = NewFeed(*feed)
+		serializer.Feeds[i] = NewFeed(feed)
 	}
 
 	return serializer
@@ -103,7 +103,7 @@ type Feed struct {
 	Updated     time.Time
 }
 
-func NewFeed(feed models.Feed) Feed {
+func NewFeed(feed *models.Feed) Feed {
 	return Feed{
 		Id:          feed.Id,
 		Title:       feed.Title,
@@ -123,7 +123,7 @@ type ShowUser struct {
 	User User
 }
 
-func NewShowUser(user models.User) ShowUser {
+func NewShowUser(user *models.User) ShowUser {
 	return ShowUser{NewUser(user)}
 }
 
@@ -144,7 +144,7 @@ func JSON(w http.ResponseWriter, v interface{}) error {
 	return err
 }
 
-func NewUser(user models.User) User {
+func NewUser(user *models.User) User {
 	return User{
 		Id:     user.Id,
 		Avatar: helpers.Gravatar(user.Email),
@@ -167,7 +167,7 @@ type ShowListen struct {
 	Episodes []Episode
 }
 
-func NewListen(listen models.Listen) Listen {
+func NewListen(listen *models.Listen) Listen {
 	return Listen{
 		Id:      listen.Id,
 		User:    listen.UserId,
@@ -175,7 +175,7 @@ func NewListen(listen models.Listen) Listen {
 	}
 }
 
-func NewShowListen(listen models.Listen, episode models.Episode) ShowListen {
+func NewShowListen(listen *models.Listen, episode *models.Episode) ShowListen {
 	serializer := ShowListen{}
 	serializer.Listen = NewListen(listen)
 
@@ -191,11 +191,11 @@ func NewListens(listens []*models.Listen, users []*models.User) Listens {
 	serializer.Users = make([]User, len(users))
 
 	for i, listen := range listens {
-		serializer.Listens[i] = NewListen(*listen)
+		serializer.Listens[i] = NewListen(listen)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(*user)
+		serializer.Users[i] = NewUser(user)
 	}
 
 	return serializer
@@ -221,30 +221,12 @@ type DeleteFavorite struct {
 	Episodes []Episode
 }
 
-func NewFavorite(favorite models.Favorite) Favorite {
+func NewFavorite(favorite *models.Favorite) Favorite {
 	return Favorite{
 		Id:      favorite.Id,
 		User:    favorite.UserId,
 		Episode: favorite.EpisodeId,
 	}
-}
-
-func NewShowFavorite(favorite models.Favorite, episode models.Episode) ShowFavorite {
-	s := ShowFavorite{}
-	s.Favorite = NewFavorite(favorite)
-
-	s.Episodes = make([]Episode, 1)
-	s.Episodes[0] = NewEpisode(episode)
-
-	return s
-}
-
-func NewDeleteFavorite(favorite models.Favorite, episode models.Episode) DeleteFavorite {
-	s := DeleteFavorite{}
-	s.Episodes = make([]Episode, 1)
-	s.Episodes[0] = NewEpisode(episode)
-
-	return s
 }
 
 func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites {
@@ -253,11 +235,11 @@ func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites 
 	serializer.Users = make([]User, len(favorites))
 
 	for i, favorite := range favorites {
-		serializer.Favorites[i] = NewFavorite(*favorite)
+		serializer.Favorites[i] = NewFavorite(favorite)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(*user)
+		serializer.Users[i] = NewUser(user)
 	}
 
 	return serializer
@@ -269,7 +251,7 @@ type ShowFeed struct {
 
 func NewShowFeed(feed *models.Feed) ShowFeed {
 	return ShowFeed{
-		Feed: NewFeed(*feed),
+		Feed: NewFeed(feed),
 	}
 }
 
@@ -277,7 +259,7 @@ func NewFeeds(feeds []*models.Feed) Feeds {
 	serializer := Feeds{}
 	serializer.Feeds = make([]Feed, len(feeds))
 	for i, feed := range feeds {
-		serializer.Feeds[i] = NewFeed(*feed)
+		serializer.Feeds[i] = NewFeed(feed)
 	}
 	return serializer
 }

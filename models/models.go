@@ -63,8 +63,8 @@ func (user *User) SetPassword(password string) (err error) {
 	return err
 }
 
-func NewUser(email, password string) User {
+func NewUser(email, password string) *User {
 	user := User{Email: email}
 	user.SetPassword(password)
-	return user
+	return &user
 }

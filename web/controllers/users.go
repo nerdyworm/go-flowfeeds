@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,15 +17,14 @@ type UsersController struct {
 }
 
 func (c *UsersController) Create() error {
-	createUserRequest := CreateUserRequest{}
+	request := CreateUserRequest{}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&createUserRequest)
+	err := c.Decode(&request)
 	if err != nil {
-		log.Println("users.Create", err)
 		return err
 	}
 
-	errors, err := createUserRequest.Validate(c.Store)
+	errors, err := request.Validate(c.Store)
 	if err != nil {
 		return err
 	}
@@ -35,10 +33,10 @@ func (c *UsersController) Create() error {
 		return c.JSON(422, errors)
 	}
 
-	params := createUserRequest.User
+	params := request.User
 
 	user := models.NewUser(params.Email, params.Password)
-	err = c.Store.Users.Insert(&user)
+	err = c.Store.Users.Insert(user)
 	if err != nil {
 		log.Println("users.Create models.UserCreate", err)
 		return err
@@ -63,7 +61,7 @@ func (c *UsersController) Show() error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, serializers.NewShowUser(*user))
+	return c.JSON(http.StatusOK, serializers.NewShowUser(user))
 }
 
 type CreateUserRequest struct {

@@ -22,7 +22,7 @@ type manifest struct {
 	}
 }
 
-func newManifest(user models.User) manifest {
+func newManifest(user *models.User) manifest {
 	m := manifest{CurrentUser: user.Id}
 	m.Payload.User = serializers.NewUser(user)
 	return m
@@ -47,7 +47,7 @@ func (c *HomeController) Index() error {
 
 func (c *HomeController) manifest() (string, error) {
 	if c.CurrentUser.Id != 0 {
-		m := newManifest(c.CurrentUser)
+		m := newManifest(&c.CurrentUser)
 		b, err := json.Marshal(m)
 		if err != nil {
 			return "", err

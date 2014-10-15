@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -34,4 +35,8 @@ func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) er
 func (c *ApplicationController) JSON(status int, a interface{}) error {
 	c.ResponseWriter.WriteHeader(status)
 	return serializers.JSON(c.ResponseWriter, a)
+}
+
+func (c *ApplicationController) Decode(target interface{}) error {
+	return json.NewDecoder(c.Request.Body).Decode(target)
 }

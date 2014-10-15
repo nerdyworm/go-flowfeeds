@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -38,13 +37,13 @@ func (c *ListensController) Create() error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, serializers.NewShowListen(*listen, *episode))
+	return c.JSON(http.StatusCreated, serializers.NewShowListen(listen, episode))
 }
 
 func (c *ListensController) getEpisodeId() (int64, error) {
 	params := ListenParams{}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&params)
+	err := c.Decode(&params)
 	if err != nil {
 		return 0, err
 	}
