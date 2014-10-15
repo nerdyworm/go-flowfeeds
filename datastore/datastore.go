@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	DB *sqlx.DB
+	db *sqlx.DB
 )
 
 func Connect(config string) error {
 	var err error
-	DB, err = sqlx.Connect("postgres", config)
+	db, err = sqlx.Connect("postgres", config)
 	return err
 }
 
@@ -30,7 +30,7 @@ func (s *Datastore) QueryBuilder() squirrel.StatementBuilderType {
 
 func NewDatastore() *Datastore {
 	d := &Datastore{}
-	d.db = DB
+	d.db = db
 	d.Episodes = &episodesStore{d}
 	d.Feeds = &feedsStore{d}
 	d.Users = &usersStore{d}
