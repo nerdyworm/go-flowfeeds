@@ -1,11 +1,7 @@
 package serializers
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
@@ -13,25 +9,29 @@ import (
 )
 
 type Episode struct {
-	Id             int64
-	Feed           int64
-	Title          string
-	Description    string
-	Url            string
-	Thumb          string
-	Cover          string
-	Published      time.Time
-	FavoritesCount int
-	ListensCount   int
-	Favorited      bool
-	Listened       bool
-	Links          EpisodeLinks `json:"links"`
+	*models.Episode
+	Thumb string
+	Cover string
+	Links EpisodeLinks `json:"links"`
 }
 
 type EpisodeLinks struct {
 	Favorites string `json:"favorites"`
 	Listens   string `json:"listens"`
 	Related   string `json:"related"`
+}
+
+func NewEpisode(episode *models.Episode) Episode {
+	return Episode{
+		episode,
+		fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, episode.FeedId),
+		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
+		EpisodeLinks{
+			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
+			Listens:   fmt.Sprintf("/api/v1/episodes/%d/listens", episode.Id),
+			Related:   fmt.Sprintf("/api/v1/episodes/%d/related", episode.Id),
+		},
+	}
 }
 
 type ShowEpisode struct {
@@ -46,77 +46,74 @@ func NewShowEpisode(episode *models.Episode, feed *models.Feed) ShowEpisode {
 	}
 }
 
-func NewEpisode(episode *models.Episode) Episode {
-	return Episode{
-		Id:             episode.Id,
-		Feed:           episode.FeedId,
-		Title:          episode.Title,
-		Description:    episode.Description,
-		Url:            episode.Url,
-		Thumb:          fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, episode.FeedId),
-		Cover:          fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
-		Published:      episode.Published,
-		Favorited:      episode.Favorited,
-		Listened:       episode.Listened,
-		ListensCount:   episode.ListensCount,
-		FavoritesCount: episode.FavoritesCount,
-		Links: EpisodeLinks{
-			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
-			Listens:   fmt.Sprintf("/api/v1/episodes/%d/listens", episode.Id),
-			Related:   fmt.Sprintf("/api/v1/episodes/%d/related", episode.Id),
-		},
-	}
-}
-
-type Feeds struct {
-	Feeds []Feed
-}
-
 type Episodes struct {
 	Episodes []Episode
 	Feeds    []Feed
 }
 
 func NewEpisodes(episodes []*models.Episode, feeds []*models.Feed) Episodes {
-	serializer := Episodes{}
-	serializer.Episodes = make([]Episode, len(episodes))
-	serializer.Feeds = make([]Feed, len(feeds))
+	s := Episodes{}
+	s.Episodes = make([]Episode, len(episodes))
+	s.Feeds = make([]Feed, len(feeds))
 
 	for i, episode := range episodes {
-		serializer.Episodes[i] = NewEpisode(episode)
+		s.Episodes[i] = NewEpisode(episode)
 	}
 
 	for i, feed := range feeds {
-		serializer.Feeds[i] = NewFeed(feed)
+		s.Feeds[i] = NewFeed(feed)
 	}
 
-	return serializer
+	return s
 }
 
 type Feed struct {
-	Id          int64
-	Title       string
-	Description string
-	Url         string
-	Thumb       string
-	Cover       string
-	Updated     time.Time
+	*models.Feed
+	Thumb string
+	Cover string
 }
 
 func NewFeed(feed *models.Feed) Feed {
 	return Feed{
-		Id:          feed.Id,
-		Title:       feed.Title,
-		Description: feed.Description,
-		Url:         feed.Url,
-		Thumb:       fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, feed.Id),
-		Cover:       fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
+		feed,
+		fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, feed.Id),
+		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
+	}
+}
+
+type ShowFeed struct {
+	Feed Feed
+}
+
+type Feeds struct {
+	Feeds []Feed
+}
+
+func NewFeeds(feeds []*models.Feed) Feeds {
+	s := Feeds{}
+	s.Feeds = make([]Feed, len(feeds))
+	for i, feed := range feeds {
+		s.Feeds[i] = NewFeed(feed)
+	}
+	return s
+}
+
+func NewShowFeed(feed *models.Feed) ShowFeed {
+	return ShowFeed{
+		Feed: NewFeed(feed),
 	}
 }
 
 type User struct {
 	Id     int64
 	Avatar string
+}
+
+func NewUser(user *models.User) User {
+	return User{
+		Id:     user.Id,
+		Avatar: helpers.Gravatar(user.Email),
+	}
 }
 
 type ShowUser struct {
@@ -127,34 +124,8 @@ func NewShowUser(user *models.User) ShowUser {
 	return ShowUser{NewUser(user)}
 }
 
-type FeedShowSerializer struct {
-	Feed Feed
-}
-
-func JSON(w http.ResponseWriter, v interface{}) error {
-	data, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("ERROR JSON MarshalIndent %v\n", err)
-		return err
-	}
-
-	w.Header().Set("content-type", "application/json; charset=utf-8")
-	_, err = w.Write(data)
-	return err
-}
-
-func NewUser(user *models.User) User {
-	return User{
-		Id:     user.Id,
-		Avatar: helpers.Gravatar(user.Email),
-	}
-}
-
 type Listen struct {
-	Id      int64
-	User    int64
-	Episode int64
+	*models.Listen
 }
 
 type Listens struct {
@@ -168,43 +139,37 @@ type ShowListen struct {
 }
 
 func NewListen(listen *models.Listen) Listen {
-	return Listen{
-		Id:      listen.Id,
-		User:    listen.UserId,
-		Episode: listen.EpisodeId,
-	}
+	return Listen{listen}
 }
 
 func NewShowListen(listen *models.Listen, episode *models.Episode) ShowListen {
-	serializer := ShowListen{}
-	serializer.Listen = NewListen(listen)
+	s := ShowListen{}
+	s.Listen = NewListen(listen)
 
-	serializer.Episodes = make([]Episode, 1)
-	serializer.Episodes[0] = NewEpisode(episode)
+	s.Episodes = make([]Episode, 1)
+	s.Episodes[0] = NewEpisode(episode)
 
-	return serializer
+	return s
 }
 
 func NewListens(listens []*models.Listen, users []*models.User) Listens {
-	serializer := Listens{}
-	serializer.Listens = make([]Listen, len(listens))
-	serializer.Users = make([]User, len(users))
+	s := Listens{}
+	s.Listens = make([]Listen, len(listens))
+	s.Users = make([]User, len(users))
 
 	for i, listen := range listens {
-		serializer.Listens[i] = NewListen(listen)
+		s.Listens[i] = NewListen(listen)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(user)
+		s.Users[i] = NewUser(user)
 	}
 
-	return serializer
+	return s
 }
 
 type Favorite struct {
-	Id      int64
-	User    int64
-	Episode int64
+	*models.Favorite
 }
 
 type Favorites struct {
@@ -212,54 +177,22 @@ type Favorites struct {
 	Users     []User
 }
 
-type ShowFavorite struct {
-	Favorite Favorite
-	Episodes []Episode
-}
-
-type DeleteFavorite struct {
-	Episodes []Episode
-}
-
 func NewFavorite(favorite *models.Favorite) Favorite {
-	return Favorite{
-		Id:      favorite.Id,
-		User:    favorite.UserId,
-		Episode: favorite.EpisodeId,
-	}
+	return Favorite{favorite}
 }
 
 func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites {
-	serializer := Favorites{}
-	serializer.Favorites = make([]Favorite, len(favorites))
-	serializer.Users = make([]User, len(favorites))
+	s := Favorites{}
+	s.Favorites = make([]Favorite, len(favorites))
+	s.Users = make([]User, len(favorites))
 
 	for i, favorite := range favorites {
-		serializer.Favorites[i] = NewFavorite(favorite)
+		s.Favorites[i] = NewFavorite(favorite)
 	}
 
 	for i, user := range users {
-		serializer.Users[i] = NewUser(user)
+		s.Users[i] = NewUser(user)
 	}
 
-	return serializer
-}
-
-type ShowFeed struct {
-	Feed Feed
-}
-
-func NewShowFeed(feed *models.Feed) ShowFeed {
-	return ShowFeed{
-		Feed: NewFeed(feed),
-	}
-}
-
-func NewFeeds(feeds []*models.Feed) Feeds {
-	serializer := Feeds{}
-	serializer.Feeds = make([]Feed, len(feeds))
-	for i, feed := range feeds {
-		serializer.Feeds[i] = NewFeed(feed)
-	}
-	return serializer
+	return s
 }

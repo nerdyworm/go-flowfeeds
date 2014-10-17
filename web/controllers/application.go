@@ -7,7 +7,6 @@ import (
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/serializers"
 	"bitbucket.org/nerdyworm/go-flowfeeds/web/sessions"
 	"github.com/codegangsta/controller"
 )
@@ -34,7 +33,16 @@ func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) er
 
 func (c *ApplicationController) JSON(status int, a interface{}) error {
 	c.ResponseWriter.WriteHeader(status)
-	return serializers.JSON(c.ResponseWriter, a)
+	c.ResponseWriter.Header().Set("content-type", "application/json; charset=utf-8")
+	data, err := json.Marshal(a)
+	if err != nil {
+		c.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+		log.Printf("ERROR JSON MarshalIndent %v\n", err)
+		return err
+	}
+
+	_, err = c.ResponseWriter.Write(data)
+	return err
 }
 
 func (c *ApplicationController) Decode(target interface{}) error {
