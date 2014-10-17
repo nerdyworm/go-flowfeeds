@@ -125,7 +125,9 @@ func NewShowUser(user *models.User) ShowUser {
 }
 
 type Listen struct {
-	*models.Listen
+	Id      int64
+	User    int64
+	Episode int64
 }
 
 type Listens struct {
@@ -139,7 +141,7 @@ type ShowListen struct {
 }
 
 func NewListen(listen *models.Listen) Listen {
-	return Listen{listen}
+	return Listen{listen.Id, listen.UserId, listen.EpisodeId}
 }
 
 func NewShowListen(listen *models.Listen, episode *models.Episode) ShowListen {
@@ -169,7 +171,9 @@ func NewListens(listens []*models.Listen, users []*models.User) Listens {
 }
 
 type Favorite struct {
-	*models.Favorite
+	Id      int64
+	User    int64
+	Episode int64
 }
 
 type Favorites struct {
@@ -178,7 +182,7 @@ type Favorites struct {
 }
 
 func NewFavorite(favorite *models.Favorite) Favorite {
-	return Favorite{favorite}
+	return Favorite{favorite.Id, favorite.UserId, favorite.EpisodeId}
 }
 
 func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites {
