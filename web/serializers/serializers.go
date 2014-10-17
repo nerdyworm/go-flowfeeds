@@ -8,11 +8,14 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/web/helpers"
 )
 
+type omit *struct{}
 type Episode struct {
 	*models.Episode
-	Thumb string
-	Cover string
-	Links EpisodeLinks `json:"links"`
+	Feed   int64
+	Thumb  string
+	Cover  string
+	Links  EpisodeLinks `json:"links"`
+	FeedId omit         `json:"FeedId,omitempty"`
 }
 
 type EpisodeLinks struct {
@@ -24,6 +27,7 @@ type EpisodeLinks struct {
 func NewEpisode(episode *models.Episode) Episode {
 	return Episode{
 		episode,
+		episode.FeedId,
 		fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, episode.FeedId),
 		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
 		EpisodeLinks{
@@ -31,6 +35,7 @@ func NewEpisode(episode *models.Episode) Episode {
 			Listens:   fmt.Sprintf("/api/v1/episodes/%d/listens", episode.Id),
 			Related:   fmt.Sprintf("/api/v1/episodes/%d/related", episode.Id),
 		},
+		nil,
 	}
 }
 
