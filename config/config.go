@@ -12,6 +12,7 @@ var (
 	AWS_SECRET_ACCESS_KEY = ""
 	SESSION_AUTH_KEY      = ""
 	SESSION_CRYPT_KEY     = ""
+	COLLECTIONS           = ""
 )
 
 func init() {
@@ -31,4 +32,6 @@ func init() {
 
 	SESSION_AUTH_KEY = viper.GetString("SESSION_AUTH_KEY")
 	SESSION_CRYPT_KEY = viper.GetString("SESSION_CRYPT_KEY")
+
+	COLLECTIONS = viper.GetString("COLLECTIONS")
 }

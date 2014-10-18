@@ -18,6 +18,7 @@ type ApplicationController struct {
 }
 
 func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) error {
+	c.Base.Init(rw, r)
 	c.Store = datastore.NewDatastore()
 
 	var err error
@@ -26,8 +27,7 @@ func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) er
 		log.Printf("ApplicationController#Init sessions.GetCurrentUser %v\n", err)
 		return err
 	}
-
-	return c.Base.Init(rw, r)
+	return nil
 }
 
 func (c *ApplicationController) JSON(status int, a interface{}) error {

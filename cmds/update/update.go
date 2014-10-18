@@ -1,7 +1,6 @@
-package updates
+package update
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -10,21 +9,17 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"sync"
-	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/modules/rss"
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/s3"
 )
 
-type Collection struct {
-	Name string
-	Urls []string
+func Image() {
+	makeImagesFromFeeds()
 }
 
 func imageWorker(id int, feeds <-chan models.Feed, results chan<- int) {
@@ -35,11 +30,6 @@ func imageWorker(id int, feeds <-chan models.Feed, results chan<- int) {
 		}
 		results <- 1
 	}
-}
-
-func Run(collection string) {
-	startUpdateFromCollections(collection)
-	makeImagesFromFeeds()
 }
 
 func makeImagesFromFeeds() {
@@ -113,6 +103,7 @@ func processImage(input string, size string, key string, bucket *s3.Bucket) erro
 		return err
 	}
 	output.Close()
+	defer os.Remove(output.Name())
 
 	out, err := exec.Command("convert", input, "-thumbnail", size+"^", "-gravity", "center", "-extent", size, output.Name()).Output()
 	if err != nil {
@@ -136,100 +127,15 @@ func processImage(input string, size string, key string, bucket *s3.Bucket) erro
 		return err
 	}
 
-	os.Remove(output.Name())
-
 	return nil
 }
 
-func worker(id int, urls <-chan string) {
-	log.Printf("Starting worker %d\n", id)
-	for url := range urls {
-		log.Println("worker", id, "processing job", url)
-		if err := updateUrl(url); err != nil {
-			log.Printf("error updating: %s\n\t%v", url, err)
-		}
-	}
-}
-
-func startUpdateFromCollections(jsonFile string) {
-	var wg sync.WaitGroup
-
-	for _, c := range readCollections(jsonFile) {
-		for _, url := range c.Urls {
-			wg.Add(1)
-			go func(url string) {
-				defer wg.Done()
-				if err := updateUrl(url); err != nil {
-					log.Printf("error updating: %s\n\t%v", url, err)
-				}
-			}(url)
-		}
-	}
-
-	wg.Wait()
-}
-
-func readCollections(jsonFile string) []Collection {
-	collections := make([]Collection, 0)
-
-	data, err := ioutil.ReadFile(jsonFile)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	err = json.Unmarshal(data, &collections)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	return collections
-}
-
-func updateUrl(url string) error {
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	rssFeed, err := rss.Read(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	feed := &models.Feed{
-		Url:         url,
-		Title:       rssFeed.Title(),
-		Description: rssFeed.Description(),
-		Image:       rssFeed.Image(),
-		Updated:     time.Now(),
-	}
-
-	store := datastore.NewDatastore()
-
-	err = store.Feeds.Ensure(feed)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, item := range rssFeed.Items() {
-		episode := &models.Episode{
-			FeedId:      feed.Id,
-			Guid:        item.Guid,
-			Title:       item.Title,
-			Description: item.Description,
-			Url:         item.Enclosure.URL,
-			Image:       feed.Image,
-			Published:   item.Published(),
-		}
-
-		err = store.Episodes.Ensure(episode)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	log.Println("finished", url)
-
-	return nil
-}
+//func worker(id int, urls <-chan string) {
+//log.Printf("Starting worker %d\n", id)
+//for url := range urls {
+//log.Println("worker", id, "processing job", url)
+//if err := updateUrl(url); err != nil {
+//log.Printf("error updating: %s\n\t%v", url, err)
+//}
+//}
+//}
