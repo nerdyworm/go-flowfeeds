@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
@@ -12,8 +13,6 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/rss"
 )
-
-var store = datastore.NewDatastore()
 
 type Fetcher interface {
 	Fetch() error
@@ -31,37 +30,34 @@ type Collection struct {
 }
 
 func Rss() {
-	fetchers := make(chan Fetcher, 1)
-	quit := make(chan bool)
+	start := time.Now()
 
-	concurency := 10
-	for i := 0; i < concurency; i++ {
-		go func() {
-			for {
-				select {
-				case f := <-fetchers:
-					handleFetcher(f)
-				case <-quit:
-					break
-				}
-			}
-		}()
-	}
-
+	var wg sync.WaitGroup
 	for _, c := range readCollections() {
 		for _, url := range c.Urls {
-			fetchers <- &RssFeed{Url: url}
+			wg.Add(1)
+			go func(url string) {
+				defer wg.Done()
+				s := time.Now()
+				rssFeed := RssFeed{Url: url}
+				ensureContentsOfFetcher(&rssFeed)
+				log.Printf("%s in %v\n", rssFeed.Feed().Url, time.Since(s))
+			}(url)
 		}
 	}
+
+	wg.Wait()
+	log.Printf("finished update in %v\n", time.Since(start))
 }
 
-func handleFetcher(fetcher Fetcher) error {
+func ensureContentsOfFetcher(fetcher Fetcher) error {
 	err := fetcher.Fetch()
 	if err != nil {
 		log.Printf("error updating: %v\n", err)
 		return err
 	}
 
+	store := datastore.NewDatastore()
 	feed := fetcher.Feed()
 
 	err = store.Feeds.Ensure(&feed)

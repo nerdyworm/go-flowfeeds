@@ -14,12 +14,10 @@ import (
 
 var (
 	USERS = 10
-	store *datastore.Datastore
+	store = datastore.NewDatastore()
 )
 
 func Run() {
-	store = datastore.NewDatastore()
-
 	page := 0
 	users := createNewUsers()
 	rand.Seed(time.Now().UnixNano())
