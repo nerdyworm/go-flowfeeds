@@ -13,11 +13,7 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/rss"
 )
 
-var Updaters = []Updater{}
-
-func init() {
-	Updaters = append(Updaters, rssUpdater{})
-}
+var store = datastore.NewDatastore()
 
 type Fetcher interface {
 	Fetch() error
@@ -27,19 +23,6 @@ type Fetcher interface {
 
 type Updater interface {
 	Fetchers() []Fetcher
-}
-
-type rssUpdater struct{}
-
-func (r rssUpdater) Fetchers() []Fetcher {
-	fetchers := []Fetcher{}
-	for _, c := range readCollections() {
-		for _, url := range c.Urls {
-			fetchers = append(fetchers, &RssFeed{Url: url})
-		}
-	}
-
-	return fetchers
 }
 
 type Collection struct {
@@ -65,9 +48,9 @@ func Rss() {
 		}()
 	}
 
-	for _, pumper := range Updaters {
-		for _, fetcher := range pumper.Fetchers() {
-			fetchers <- fetcher
+	for _, c := range readCollections() {
+		for _, url := range c.Urls {
+			fetchers <- &RssFeed{Url: url}
 		}
 	}
 }
@@ -78,8 +61,6 @@ func handleFetcher(fetcher Fetcher) error {
 		log.Printf("error updating: %v\n", err)
 		return err
 	}
-
-	store := datastore.NewDatastore()
 
 	feed := fetcher.Feed()
 

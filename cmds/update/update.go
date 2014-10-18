@@ -129,13 +129,3 @@ func processImage(input string, size string, key string, bucket *s3.Bucket) erro
 
 	return nil
 }
-
-//func worker(id int, urls <-chan string) {
-//log.Printf("Starting worker %d\n", id)
-//for url := range urls {
-//log.Println("worker", id, "processing job", url)
-//if err := updateUrl(url); err != nil {
-//log.Printf("error updating: %s\n\t%v", url, err)
-//}
-//}
-//}
