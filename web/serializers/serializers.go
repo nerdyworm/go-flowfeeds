@@ -9,10 +9,10 @@ import (
 )
 
 type omit *struct{}
+
 type Episode struct {
 	*models.Episode
 	Feed   int64
-	Thumb  string
 	Cover  string
 	Links  EpisodeLinks `json:"links"`
 	FeedId omit         `json:"FeedId,omitempty"`
@@ -28,7 +28,6 @@ func NewEpisode(episode *models.Episode) Episode {
 	return Episode{
 		episode,
 		episode.FeedId,
-		fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, episode.FeedId),
 		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
 		EpisodeLinks{
 			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
@@ -74,14 +73,12 @@ func NewEpisodes(episodes []*models.Episode, feeds []*models.Feed) Episodes {
 
 type Feed struct {
 	*models.Feed
-	Thumb string
 	Cover string
 }
 
 func NewFeed(feed *models.Feed) Feed {
 	return Feed{
 		feed,
-		fmt.Sprintf("%s/feeds/%d/thumb-x2.jpg", config.ASSETS, feed.Id),
 		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
 	}
 }

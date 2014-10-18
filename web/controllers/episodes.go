@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -18,7 +17,6 @@ type EpisoidesController struct {
 func (c *EpisoidesController) Index() error {
 	page, _ := strconv.Atoi(c.Request.URL.Query().Get("page"))
 	feed, _ := strconv.Atoi(c.Request.URL.Query().Get("feed"))
-	log.Println(c.Request.URL.Query())
 	baseOptions := datastore.ListOptions{PerPage: 24, Page: page}
 	options := datastore.EpisodeListOptions{baseOptions, int64(feed)}
 	episodes, feeds, err := c.Store.Episodes.ListFor(&c.CurrentUser, options)

@@ -22,25 +22,24 @@ func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) er
 
 	var err error
 	c.CurrentUser, err = sessions.CurrentUser(r, c.Store)
-	if err != nil {
-		log.Println("handlers.Default session.CurrentUser", err)
-	} else {
-		log.Printf("current user: (%d) %s\n", c.CurrentUser.Id, c.CurrentUser.Email)
+	if err != nil && err != sessions.NoCurrentUser {
+		log.Printf("ApplicationController#Init sessions.GetCurrentUser %v\n", err)
+		return err
 	}
 
 	return c.Base.Init(rw, r)
 }
 
 func (c *ApplicationController) JSON(status int, a interface{}) error {
-	c.ResponseWriter.WriteHeader(status)
-	c.ResponseWriter.Header().Set("content-type", "application/json; charset=utf-8")
 	data, err := json.Marshal(a)
 	if err != nil {
+		log.Printf("ApplicationController#JSON json.Marshal %v\n", err)
 		c.ResponseWriter.WriteHeader(http.StatusInternalServerError)
-		log.Printf("ERROR JSON MarshalIndent %v\n", err)
 		return err
 	}
 
+	c.ResponseWriter.WriteHeader(status)
+	c.ResponseWriter.Header().Set("content-type", "application/json; charset=utf-8")
 	_, err = c.ResponseWriter.Write(data)
 	return err
 }

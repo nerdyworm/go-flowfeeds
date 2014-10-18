@@ -3,6 +3,7 @@ package sessions
 import (
 	"errors"
 	"net/http"
+
 	"github.com/gorilla/sessions"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
@@ -19,6 +20,8 @@ var (
 		[]byte(config.SESSION_AUTH_KEY),
 		[]byte(config.SESSION_CRYPT_KEY),
 	)
+
+	NoCurrentUser = errors.New("No current user")
 )
 
 func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
@@ -61,5 +64,5 @@ func CurrentUser(r *http.Request, store *datastore.Datastore) (models.User, erro
 
 	}
 
-	return models.User{}, errors.New("No current user")
+	return models.User{}, NoCurrentUser
 }

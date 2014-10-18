@@ -38,7 +38,7 @@ func (c *UsersController) Create() error {
 	user := models.NewUser(params.Email, params.Password)
 	err = c.Store.Users.Insert(user)
 	if err != nil {
-		log.Println("users.Create models.UserCreate", err)
+		log.Printf("UsersController#Create store.Users.Insert %v\n", err)
 		return err
 	}
 
@@ -80,7 +80,7 @@ func (r CreateUserRequest) Validate(store *datastore.Datastore) (models.Validati
 	} else {
 		exists, err := store.Users.Exists(params.Email)
 		if err != nil {
-			log.Println("users.Create models.UserExistsWithEmail", err)
+			log.Printf("CreateUserRequest#Validate store.Users.Exists %v\n", err)
 			return validationErrors, err
 		}
 

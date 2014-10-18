@@ -96,23 +96,7 @@ func makeImages(feed models.Feed) error {
 	sss := s3.New(auth, aws.USEast)
 	bucket := sss.Bucket(config.BUCKET)
 
-	/// THUMBNAILS
-	key := fmt.Sprintf("/feeds/%d/thumb.jpg", feed.Id)
-	err = processImage(image.Name(), "280x280", key, bucket)
-	if err != nil {
-		os.Remove(image.Name())
-		return err
-	}
-
-	key = fmt.Sprintf("/feeds/%d/thumb-x2.jpg", feed.Id)
-	err = processImage(image.Name(), "560x560", key, bucket)
-	if err != nil {
-		os.Remove(image.Name())
-		return err
-	}
-
-	// COVER
-	key = fmt.Sprintf("/feeds/%d/cover.jpg", feed.Id)
+	key := fmt.Sprintf("/feeds/%d/cover.jpg", feed.Id)
 	err = processImage(image.Name(), "600x600", key, bucket)
 	if err != nil {
 		os.Remove(image.Name())
