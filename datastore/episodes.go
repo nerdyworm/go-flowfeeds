@@ -10,11 +10,20 @@ type EpisodesStore interface {
 	Get(id int64) (*models.Episode, error)
 	GetForUser(*models.User, int64) (*models.Episode, error)
 	Related(id int64) ([]*models.Episode, []*models.Feed, error)
-	ListFor(*models.User, ListOptions) ([]*models.Episode, []*models.Feed, error)
+	ListFor(*models.User, EpisodeListOptions) ([]*models.Episode, []*models.Feed, error)
 	Listens(id int64) ([]*models.Listen, []*models.User, error)
 	Favorites(id int64) ([]*models.Favorite, []*models.User, error)
 	ToggleFavoriteForUser(*models.User, int64) error
 	Ensure(*models.Episode) error
+}
+
+type EpisodeListOptions struct {
+	ListOptions
+	FeedId int64
+}
+
+func (f EpisodeListOptions) OrderOrDefault() string {
+	return "published desc"
 }
 
 type episodesStore struct{ *Datastore }
@@ -76,11 +85,20 @@ func (s *episodesStore) Related(id int64) ([]*models.Episode, []*models.Feed, er
 	return episodes, feeds, err
 }
 
-func (s *episodesStore) ListFor(user *models.User, options ListOptions) ([]*models.Episode, []*models.Feed, error) {
+func (s *episodesStore) ListFor(user *models.User, options EpisodeListOptions) ([]*models.Episode, []*models.Feed, error) {
 	episodes := []*models.Episode{}
 	feeds := []*models.Feed{}
 
-	err := s.db.Select(&episodes, "select * from episode order by published desc limit $1 offset $2", options.PerPageOrDefault(), options.Offset())
+	q := s.QueryBuilder().Select("*").From("episode")
+
+	if options.FeedId != 0 {
+		q = q.Where("feed_id = ?", options.FeedId)
+	}
+
+	q = q.Limit(uint64(options.PerPageOrDefault())).Offset(uint64(options.Offset())).OrderBy(options.OrderOrDefault())
+
+	query, args, _ := q.ToSql()
+	err := s.db.Select(&episodes, query, args...)
 
 	episodeIds := []int64{}
 	feedIds := []int64{}

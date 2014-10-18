@@ -26,9 +26,8 @@ func Run() {
 
 	for {
 		page += 1
-		episodes, _, err := store.Episodes.ListFor(&models.User{}, datastore.ListOptions{
-			PerPage: 1000,
-			Page:    page,
+		episodes, _, err := store.Episodes.ListFor(&models.User{}, datastore.EpisodeListOptions{
+			ListOptions: datastore.ListOptions{PerPage: 1000, Page: page},
 		})
 
 		if err != nil {
