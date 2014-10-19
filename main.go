@@ -37,7 +37,7 @@ func main() {
 			},
 			Action: func(c *cli.Context) {
 				update.Rss()
-				//update.Image()
+				update.Image()
 			},
 		},
 		cli.Command{
