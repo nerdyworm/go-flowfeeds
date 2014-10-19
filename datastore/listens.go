@@ -9,8 +9,8 @@ type ListensStore interface {
 type listensStore struct{ *Datastore }
 
 func (s *listensStore) Create(user *models.User, id int64) (*models.Listen, error) {
-	listen := &models.Listen{UserId: user.Id, EpisodeId: id}
-	row := s.db.QueryRow("insert into listen (user_id, episode_id) values($1, $2) returning id", listen.UserId, listen.EpisodeId)
+	listen := &models.Listen{User: user.Id, Episode: id}
+	row := s.db.QueryRow(`insert into listen ("user", episode) values($1, $2) returning id`, listen.User, listen.Episode)
 	err := row.Scan(&listen.Id)
 	return listen, err
 }

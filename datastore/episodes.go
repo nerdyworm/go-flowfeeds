@@ -10,7 +10,7 @@ type EpisodesStore interface {
 	Get(id int64) (*models.Episode, error)
 	GetForUser(*models.User, int64) (*models.Episode, error)
 	Related(id int64) ([]*models.Episode, []*models.Feed, error)
-	ListFor(*models.User, EpisodeListOptions) ([]*models.Episode, []*models.Feed, error)
+	ListFor(*models.User, EpisodeListOptions) (Episodes, []*models.Feed, error)
 	Listens(id int64) ([]*models.Listen, []*models.User, error)
 	Favorites(id int64) ([]*models.Favorite, []*models.User, error)
 	ToggleFavoriteForUser(*models.User, int64) error
@@ -19,11 +19,16 @@ type EpisodesStore interface {
 
 type EpisodeListOptions struct {
 	ListOptions
-	FeedId int64
+	Feed int64
 }
 
 func (f EpisodeListOptions) OrderOrDefault() string {
 	return "published desc"
+}
+
+type Episodes struct {
+	Episodes []*models.Episode
+	Total    int
 }
 
 type episodesStore struct{ *Datastore }
@@ -40,8 +45,8 @@ func (s *episodesStore) GetForUser(user *models.User, id int64) (*models.Episode
 		return episode, err
 	}
 
-	s.db.Get(&episode.Listened, "select exists(select 1 from listen where user_id=$1 and episode_id=$2)", user.Id, episode.Id)
-	s.db.Get(&episode.Favorited, "select exists(select 1 from favorite where user_id=$1 and episode_id=$2)", user.Id, episode.Id)
+	s.db.Get(&episode.Listened, `select exists(select 1 from listen where "user"=$1 and "episode"=$2)`, user.Id, episode.Id)
+	s.db.Get(&episode.Favorited, `select exists(select 1 from favorite where "user"=$1 and "episode"=$2)`, user.Id, episode.Id)
 
 	return episode, err
 }
@@ -53,15 +58,15 @@ func (s *episodesStore) ToggleFavoriteForUser(user *models.User, id int64) error
 	}
 
 	exists := false
-	err = tx.Get(&exists, "select exists(select 1 from favorite where user_id=$1 and episode_id=$2)", user.Id, id)
+	err = tx.Get(&exists, `select exists(select 1 from favorite where "user"=$1 and episode=$2)`, user.Id, id)
 	if err != nil {
 		return err
 	}
 
 	if exists {
-		tx.Exec("delete from favorite where user_id=$1 and episode_id=$2", user.Id, id)
+		tx.Exec(`delete from favorite where "user"=$1 and "episode"=$2`, user.Id, id)
 	} else {
-		tx.Exec("insert into favorite(user_id, episode_id) values($1, $2)", user.Id, id)
+		tx.Exec(`insert into favorite("user", episode) values($1, $2)`, user.Id, id)
 	}
 
 	return tx.Commit()
@@ -78,33 +83,39 @@ func (s *episodesStore) Related(id int64) ([]*models.Episode, []*models.Feed, er
 
 	ids := []int64{}
 	for i := range episodes {
-		ids = append(ids, episodes[i].FeedId)
+		ids = append(ids, episodes[i].Feed)
 	}
 
 	feeds, err = s.Feeds.GetIds(ids)
 	return episodes, feeds, err
 }
 
-func (s *episodesStore) ListFor(user *models.User, options EpisodeListOptions) ([]*models.Episode, []*models.Feed, error) {
-	episodes := []*models.Episode{}
+func (s *episodesStore) ListFor(user *models.User, options EpisodeListOptions) (Episodes, []*models.Feed, error) {
+	episodes := Episodes{}
+	episodes.Episodes = []*models.Episode{}
 	feeds := []*models.Feed{}
 
+	countQuery := s.QueryBuilder().Select("count(*)").From("episode")
 	q := s.QueryBuilder().Select("*").From("episode")
 
-	if options.FeedId != 0 {
-		q = q.Where("feed_id = ?", options.FeedId)
+	if options.Feed != 0 {
+		q = q.Where("feed = ?", options.Feed)
+		countQuery = countQuery.Where("feed = ?", options.Feed)
 	}
+
+	query, args, _ := countQuery.ToSql()
+	err := s.db.Get(&episodes.Total, query, args...)
 
 	q = q.Limit(uint64(options.PerPageOrDefault())).Offset(uint64(options.Offset())).OrderBy(options.OrderOrDefault())
 
-	query, args, _ := q.ToSql()
-	err := s.db.Select(&episodes, query, args...)
+	query, args, _ = q.ToSql()
+	err = s.db.Select(&episodes.Episodes, query, args...)
 
 	episodeIds := []int64{}
 	feedIds := []int64{}
 
-	for _, episode := range episodes {
-		feedIds = append(feedIds, episode.FeedId)
+	for _, episode := range episodes.Episodes {
+		feedIds = append(feedIds, episode.Feed)
 		episodeIds = append(episodeIds, episode.Id)
 	}
 
@@ -113,7 +124,7 @@ func (s *episodesStore) ListFor(user *models.User, options EpisodeListOptions) (
 		return episodes, feeds, err
 	}
 
-	err = s.setEpisodeStateFor(user, episodes)
+	err = s.setEpisodeStateFor(user, episodes.Episodes)
 	return episodes, feeds, err
 }
 
@@ -136,7 +147,7 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 	}
 
 	listensQuery := builder.Select("*").From("listen").
-		Where(squirrel.Eq{"episode_id": ids, "user_id": user.Id})
+		Where(squirrel.Eq{"episode": ids, "user": user.Id})
 
 	query, args, err := listensQuery.ToSql()
 	if err != nil {
@@ -149,7 +160,7 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 	}
 
 	favoritesQuery := builder.Select("*").From("favorite").
-		Where(squirrel.Eq{"episode_id": ids, "user_id": user.Id})
+		Where(squirrel.Eq{"episode": ids, "user": user.Id})
 
 	query, args, err = favoritesQuery.ToSql()
 	if err != nil {
@@ -162,14 +173,14 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 	}
 
 	for _, listen := range listens {
-		if _, ok := episodesToListens[listen.EpisodeId]; !ok {
-			episodesToListens[listen.EpisodeId] = true
+		if _, ok := episodesToListens[listen.Episode]; !ok {
+			episodesToListens[listen.Episode] = true
 		}
 	}
 
 	for _, favorite := range favorites {
-		if _, ok := episodesToFavorites[favorite.EpisodeId]; !ok {
-			episodesToFavorites[favorite.EpisodeId] = true
+		if _, ok := episodesToFavorites[favorite.Episode]; !ok {
+			episodesToFavorites[favorite.Episode] = true
 		}
 	}
 
@@ -190,14 +201,14 @@ func (s *episodesStore) Favorites(id int64) ([]*models.Favorite, []*models.User,
 	favorites := []*models.Favorite{}
 	users := []*models.User{}
 
-	err := s.db.Select(&favorites, "select * from favorite where episode_id=$1", id)
+	err := s.db.Select(&favorites, "select * from favorite where episode=$1", id)
 	if err != nil {
 		return favorites, users, err
 	}
 
 	ids := []int64{}
 	for i := range favorites {
-		ids = append(ids, favorites[i].UserId)
+		ids = append(ids, favorites[i].User)
 	}
 
 	users, err = s.Users.GetIds(ids)
@@ -209,14 +220,14 @@ func (s *episodesStore) Listens(id int64) ([]*models.Listen, []*models.User, err
 	listens := []*models.Listen{}
 	users := []*models.User{}
 
-	err := s.db.Select(&listens, "select * from listen where episode_id=$1", id)
+	err := s.db.Select(&listens, "select * from listen where episode=$1", id)
 	if err != nil {
 		return listens, users, err
 	}
 
 	ids := []int64{}
 	for i := range listens {
-		ids = append(ids, listens[i].UserId)
+		ids = append(ids, listens[i].User)
 	}
 
 	users, err = s.Users.GetIds(ids)
@@ -226,8 +237,8 @@ func (s *episodesStore) Listens(id int64) ([]*models.Listen, []*models.User, err
 
 func (s *episodesStore) Ensure(episode *models.Episode) error {
 	insert := s.QueryBuilder().Insert("episode").
-		Columns("feed_id", "guid", "title", "description", "url", "image", "published").
-		Values(episode.FeedId, episode.Guid, episode.Title, episode.Description, episode.Url, episode.Image, episode.Published)
+		Columns("feed", "guid", "title", "description", "url", "image", "published").
+		Values(episode.Feed, episode.Guid, episode.Title, episode.Description, episode.Url, episode.Image, episode.Published)
 
 	query, args, _ := insert.ToSql()
 	_, err := s.db.Exec(query, args...)

@@ -10,7 +10,7 @@ create unique index feeds_url_unique on feed using btree(url);
 
 create table episode (
   id bigserial not null primary key,
-  feed_id bigint references feed(id) not null,
+  feed bigint references feed(id) not null,
   guid text not null,
   title text not null,
   description text not null,
@@ -33,27 +33,27 @@ create unique index user_email_unique on users using btree(email);
 
 create table listen (
   id bigserial not null primary key,
-  user_id bigint references users(id) not null,
-  episode_id bigint references episode(id) not null
+  "user" bigint references users(id) not null,
+  episode bigint references episode(id) not null
 );
-create index index_listen_episode_id on listen using btree(episode_id);
+create index index_listen_episode on listen using btree(episode);
 
 create table favorite (
   id bigserial not null primary key,
-  user_id bigint references users(id) not null,
-  episode_id bigint references episode(id) not null
+  "user" bigint references users(id) not null,
+  episode bigint references episode(id) not null
 );
-create index index_favorite_episode_id on favorite using btree(episode_id);
-create unique index index_favorite_user_id_episode_id_unique on favorite using btree(user_id, episode_id);
+create index index_favorite_episode on favorite using btree(episode);
+create unique index index_favorite_user_episode_unique on favorite using btree("user", episode);
 
 
 CREATE OR REPLACE FUNCTION update_listens_count() RETURNS TRIGGER AS $update_listens_trigger$
 BEGIN
   IF (TG_OP = 'DELETE') THEN
-    UPDATE episode SET listens_count = (select count(*) from listen where episode_id = OLD.episode_id) WHERE episode.id = OLD.episode_id;
+    UPDATE episode SET listens_count = (select count(*) from listen where episode = OLD.episode) WHERE episode.id = OLD.episode;
     RETURN OLD;
   ELSIF (TG_OP = 'INSERT') THEN
-    UPDATE episode SET listens_count = (select count(*) from listen where episode_id = NEW.episode_id) WHERE episode.id = NEW.episode_id;
+    UPDATE episode SET listens_count = (select count(*) from listen where episode = NEW.episode) WHERE episode.id = NEW.episode;
     RETURN NEW;
   END IF;
   RETURN NULL;
@@ -66,10 +66,10 @@ AFTER INSERT OR DELETE ON listen FOR EACH ROW EXECUTE PROCEDURE update_listens_c
 CREATE OR REPLACE FUNCTION update_favorites_count() RETURNS TRIGGER AS $update_favorites_trigger$
 BEGIN
   IF (TG_OP = 'DELETE') THEN
-    UPDATE episode SET favorites_count = (select count(*) from favorite where episode_id = OLD.episode_id) WHERE episode.id = OLD.episode_id;
+    UPDATE episode SET favorites_count = (select count(*) from favorite where episode = OLD.episode) WHERE episode.id = OLD.episode;
     RETURN OLD;
   ELSIF (TG_OP = 'INSERT') THEN
-    UPDATE episode SET favorites_count = (select count(*) from favorite where episode_id = NEW.episode_id) WHERE episode.id = NEW.episode_id;
+    UPDATE episode SET favorites_count = (select count(*) from favorite where episode = NEW.episode) WHERE episode.id = NEW.episode;
     RETURN NEW;
   END IF;
   RETURN NULL;

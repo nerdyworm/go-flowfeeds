@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
+	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
 	"bitbucket.org/nerdyworm/go-flowfeeds/web/helpers"
 )
@@ -12,10 +13,8 @@ type omit *struct{}
 
 type Episode struct {
 	*models.Episode
-	Feed   int64
-	Cover  string
-	Links  EpisodeLinks `json:"links"`
-	FeedId omit         `json:"FeedId,omitempty"`
+	Cover string
+	Links EpisodeLinks `json:"links"`
 }
 
 type EpisodeLinks struct {
@@ -26,15 +25,13 @@ type EpisodeLinks struct {
 
 func NewEpisode(episode *models.Episode) Episode {
 	return Episode{
-		episode,
-		episode.FeedId,
-		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.FeedId),
-		EpisodeLinks{
+		Episode: episode,
+		Cover:   fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, episode.Feed),
+		Links: EpisodeLinks{
 			Favorites: fmt.Sprintf("/api/v1/episodes/%d/favorites", episode.Id),
 			Listens:   fmt.Sprintf("/api/v1/episodes/%d/listens", episode.Id),
 			Related:   fmt.Sprintf("/api/v1/episodes/%d/related", episode.Id),
 		},
-		nil,
 	}
 }
 
@@ -50,17 +47,28 @@ func NewShowEpisode(episode *models.Episode, feed *models.Feed) ShowEpisode {
 	}
 }
 
+type Pagination struct {
+	Pages int
+	Page  int
+	Limit int
+	Total int
+}
+
 type Episodes struct {
 	Episodes []Episode
 	Feeds    []Feed
+	Meta     struct {
+		Pagination Pagination
+	}
 }
 
-func NewEpisodes(episodes []*models.Episode, feeds []*models.Feed) Episodes {
+func NewEpisodes(episodes datastore.Episodes, feeds []*models.Feed) Episodes {
 	s := Episodes{}
-	s.Episodes = make([]Episode, len(episodes))
+	s.Episodes = make([]Episode, len(episodes.Episodes))
 	s.Feeds = make([]Feed, len(feeds))
+	s.Meta.Pagination.Total = episodes.Total
 
-	for i, episode := range episodes {
+	for i, episode := range episodes.Episodes {
 		s.Episodes[i] = NewEpisode(episode)
 	}
 
@@ -78,8 +86,8 @@ type Feed struct {
 
 func NewFeed(feed *models.Feed) Feed {
 	return Feed{
-		feed,
-		fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
+		Feed:  feed,
+		Cover: fmt.Sprintf("%s/feeds/%d/cover.jpg", config.ASSETS, feed.Id),
 	}
 }
 
@@ -127,9 +135,7 @@ func NewShowUser(user *models.User) ShowUser {
 }
 
 type Listen struct {
-	Id      int64
-	User    int64
-	Episode int64
+	*models.Listen
 }
 
 type Listens struct {
@@ -143,7 +149,7 @@ type ShowListen struct {
 }
 
 func NewListen(listen *models.Listen) Listen {
-	return Listen{listen.Id, listen.UserId, listen.EpisodeId}
+	return Listen{listen}
 }
 
 func NewShowListen(listen *models.Listen, episode *models.Episode) ShowListen {
@@ -173,9 +179,7 @@ func NewListens(listens []*models.Listen, users []*models.User) Listens {
 }
 
 type Favorite struct {
-	Id      int64
-	User    int64
-	Episode int64
+	*models.Favorite
 }
 
 type Favorites struct {
@@ -184,7 +188,7 @@ type Favorites struct {
 }
 
 func NewFavorite(favorite *models.Favorite) Favorite {
-	return Favorite{favorite.Id, favorite.UserId, favorite.EpisodeId}
+	return Favorite{favorite}
 }
 
 func NewFavorites(favorites []*models.Favorite, users []*models.User) Favorites {

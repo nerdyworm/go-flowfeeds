@@ -23,7 +23,7 @@ type Feed struct {
 
 type Episode struct {
 	Id             int64
-	FeedId         int64 `db:"feed_id"`
+	Feed           int64
 	Guid           string
 	Title          string
 	Description    string
@@ -37,15 +37,15 @@ type Episode struct {
 }
 
 type Listen struct {
-	Id        int64
-	UserId    int64 `db:"user_id"`
-	EpisodeId int64 `db:"episode_id"`
+	Id      int64
+	User    int64
+	Episode int64
 }
 
 type Favorite struct {
-	Id        int64
-	UserId    int64 `db:"user_id"`
-	EpisodeId int64 `db:"episode_id"`
+	Id      int64
+	User    int64
+	Episode int64
 }
 
 type User struct {

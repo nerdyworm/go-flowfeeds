@@ -66,7 +66,7 @@ func ensureContentsOfFetcher(fetcher Fetcher) error {
 	}
 
 	for _, e := range fetcher.Episodes() {
-		e.FeedId = feed.Id
+		e.Feed = feed.Id
 		e.Image = feed.Image
 		err = store.Episodes.Ensure(&e)
 		if err != nil {

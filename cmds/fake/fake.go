@@ -32,12 +32,12 @@ func Run() {
 			log.Fatal(err)
 		}
 
-		if len(episodes) == 0 {
+		if len(episodes.Episodes) == 0 {
 			break
 		}
 
 		for _, user := range users {
-			for _, f := range episodes {
+			for _, f := range episodes.Episodes {
 				if shouldListen() {
 					store.Listens.Create(&user, f.Id)
 				}

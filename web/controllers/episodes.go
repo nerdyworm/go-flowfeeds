@@ -71,7 +71,8 @@ func (c *EpisoidesController) Related() error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, serializers.NewEpisodes(related, feeds))
+	episodes := datastore.Episodes{Episodes: related}
+	return c.JSON(http.StatusOK, serializers.NewEpisodes(episodes, feeds))
 }
 
 func (c *EpisoidesController) Listens() error {
@@ -122,7 +123,7 @@ func (c *EpisoidesController) getEpisode() (*models.Episode, *models.Feed, error
 		return nil, nil, err
 	}
 
-	feed, err := c.Store.Feeds.Get(episode.FeedId)
+	feed, err := c.Store.Feeds.Get(episode.Feed)
 	if err != nil {
 		return nil, nil, err
 	}
