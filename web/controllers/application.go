@@ -26,8 +26,8 @@ func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) er
 	if err != nil && err != sessions.NoCurrentUser {
 		sessions.Signout(c.ResponseWriter, c.Request)
 		log.Printf("ApplicationController#Init sessions.GetCurrentUser %v\n", err)
-		return err
 	}
+
 	return nil
 }
 
