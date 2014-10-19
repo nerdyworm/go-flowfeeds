@@ -13,6 +13,7 @@ import (
 
 const (
 	USER_SESSION_KEY = "user_id"
+	SESSION_KEY      = "__flowfeeds_session"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 )
 
 func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
-	session, err := sessionStore.Get(r, "__flowfeeds_session")
+	session, err := sessionStore.Get(r, SESSION_KEY)
 	if err != nil {
 		return err
 	}
@@ -35,12 +36,12 @@ func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
 }
 
 func Signout(w http.ResponseWriter, r *http.Request) error {
-	http.SetCookie(w, &http.Cookie{Name: "__flowfeeds_session", MaxAge: -1, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: SESSION_KEY, MaxAge: -1, Path: "/"})
 	return nil
 }
 
 func CurrentUser(r *http.Request, store *datastore.Datastore) (models.User, error) {
-	session, err := sessionStore.Get(r, "__flowfeeds_session")
+	session, err := sessionStore.Get(r, SESSION_KEY)
 	if err != nil {
 		return models.User{}, err
 	}
