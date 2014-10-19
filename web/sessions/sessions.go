@@ -35,13 +35,8 @@ func Signin(user *models.User, w http.ResponseWriter, r *http.Request) error {
 }
 
 func Signout(w http.ResponseWriter, r *http.Request) error {
-	session, err := sessionStore.Get(r, "__flowfeeds_session")
-	if err != nil {
-		return err
-	}
-
-	delete(session.Values, USER_SESSION_KEY)
-	return session.Save(r, w)
+	http.SetCookie(w, &http.Cookie{Name: "__flowfeeds_session", MaxAge: -1, Path: "/"})
+	return nil
 }
 
 func CurrentUser(r *http.Request, store *datastore.Datastore) (models.User, error) {
