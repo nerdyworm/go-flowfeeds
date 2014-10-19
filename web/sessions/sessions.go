@@ -40,6 +40,10 @@ func Signout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	cookie := &http.Cookie{}
+	cookie.Name = "__flowfeeds_session"
+	http.SetCookie(w, cookie)
+
 	delete(session.Values, USER_SESSION_KEY)
 	return session.Save(r, w)
 }
