@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"log"
+
 	"github.com/lann/squirrel"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/models"
@@ -147,7 +149,7 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 	}
 
 	listensQuery := builder.Select("*").From("listen").
-		Where(squirrel.Eq{"episode": ids, "user": user.Id})
+		Where(squirrel.Eq{"listen.episode": ids, "listen.user": user.Id})
 
 	query, args, err := listensQuery.ToSql()
 	if err != nil {
@@ -160,7 +162,7 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 	}
 
 	favoritesQuery := builder.Select("*").From("favorite").
-		Where(squirrel.Eq{"episode": ids, "user": user.Id})
+		Where(squirrel.Eq{"favorit.episode": ids, "favorite.user": user.Id})
 
 	query, args, err = favoritesQuery.ToSql()
 	if err != nil {
@@ -169,9 +171,11 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 
 	err = s.db.Select(&favorites, query, args...)
 	if err != nil {
+		log.Printf(`Select: "%s" err: "%v"\n`, query, err)
 		return err
 	}
 
+	log.Println(len(favorites))
 	for _, listen := range listens {
 		if _, ok := episodesToListens[listen.Episode]; !ok {
 			episodesToListens[listen.Episode] = true

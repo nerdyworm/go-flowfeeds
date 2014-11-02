@@ -12,6 +12,11 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func init() {
+	//log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+}
+
 func main() {
 	err := datastore.Connect(config.PG_CONFIG)
 	if err != nil {
