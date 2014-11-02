@@ -158,11 +158,12 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 
 	err = s.db.Select(&listens, query, args...)
 	if err != nil {
+		log.Printf(`Select: "%s" err: "%v"\n`, query, err)
 		return err
 	}
 
 	favoritesQuery := builder.Select("*").From("favorite").
-		Where(squirrel.Eq{"favorit.episode": ids, "favorite.user": user.Id})
+		Where(squirrel.Eq{"favorite.episode": ids, "favorite.user": user.Id})
 
 	query, args, err = favoritesQuery.ToSql()
 	if err != nil {
@@ -175,7 +176,6 @@ func (s *episodesStore) setEpisodeStateFor(user *models.User, episodes []*models
 		return err
 	}
 
-	log.Println(len(favorites))
 	for _, listen := range listens {
 		if _, ok := episodesToListens[listen.Episode]; !ok {
 			episodesToListens[listen.Episode] = true
@@ -224,8 +224,10 @@ func (s *episodesStore) Listens(id int64) ([]*models.Listen, []*models.User, err
 	listens := []*models.Listen{}
 	users := []*models.User{}
 
-	err := s.db.Select(&listens, "select * from listen where episode=$1", id)
+	query := "select * from listen where episode=$1"
+	err := s.db.Select(&listens, query, id)
 	if err != nil {
+		log.Printf(`Select: "%s" err: "%v"\n`, query, err)
 		return listens, users, err
 	}
 
@@ -251,6 +253,7 @@ func (s *episodesStore) Ensure(episode *models.Episode) error {
 	}
 
 	if err != nil {
+		log.Printf(`Exec: "%s" err: "%v"\n`, query, err)
 		return err
 	}
 
