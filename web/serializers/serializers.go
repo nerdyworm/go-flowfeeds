@@ -64,6 +64,7 @@ func NewEpisodes(episodes datastore.Episodes, feeds []*models.Feed) Episodes {
 	s := Episodes{}
 	s.Episodes = make([]Episode, len(episodes.Episodes))
 	s.Feeds = make([]Feed, len(feeds))
+	s.Meta.Pagination.Pages = episodes.Total / 24
 	s.Meta.Pagination.Total = episodes.Total
 
 	for i, episode := range episodes.Episodes {
