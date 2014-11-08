@@ -9,8 +9,6 @@ import (
 	"bitbucket.org/nerdyworm/go-flowfeeds/web/helpers"
 )
 
-type omit *struct{}
-
 type Episode struct {
 	*models.Episode
 	Cover string

@@ -67,6 +67,7 @@ func makeImages(feed models.Feed) error {
 		return err
 	}
 	defer image.Close()
+	defer os.Remove(image.Name())
 
 	log.Printf("getting %s", feed.Image)
 	resp, err := http.Get(feed.Image)
@@ -79,7 +80,7 @@ func makeImages(feed models.Feed) error {
 	if err != nil {
 		return err
 	}
-	image.Close()
+
 	log.Printf("got %s", feed.Image)
 
 	auth := aws.Auth{config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY, ""}
@@ -89,11 +90,9 @@ func makeImages(feed models.Feed) error {
 	key := fmt.Sprintf("/feeds/%d/cover.jpg", feed.Id)
 	err = processImage(image.Name(), "600x600", key, bucket)
 	if err != nil {
-		os.Remove(image.Name())
 		return err
 	}
 
-	os.Remove(image.Name())
 	return nil
 }
 

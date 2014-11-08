@@ -45,7 +45,7 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:        "faker",
+			Name:        "fake",
 			Description: "This command will generate fake users and activity - shhhhhh",
 			Action: func(c *cli.Context) {
 				fake.Run()
