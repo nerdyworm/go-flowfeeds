@@ -63,6 +63,10 @@ func (user *User) SetPassword(password string) (err error) {
 	return err
 }
 
+func (user User) IsAnonymous() bool {
+	return user.Id == 0
+}
+
 func NewUser(email, password string) *User {
 	user := User{Email: email}
 	user.SetPassword(password)

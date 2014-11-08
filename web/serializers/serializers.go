@@ -2,6 +2,7 @@ package serializers
 
 import (
 	"fmt"
+	"math"
 
 	"bitbucket.org/nerdyworm/go-flowfeeds/config"
 	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
@@ -60,11 +61,15 @@ type Episodes struct {
 	}
 }
 
-func NewEpisodes(episodes datastore.Episodes, feeds []*models.Feed) Episodes {
+func NewEpisodes(episodes datastore.Episodes, feeds []*models.Feed, options datastore.EpisodeListOptions) Episodes {
 	s := Episodes{}
 	s.Episodes = make([]Episode, len(episodes.Episodes))
 	s.Feeds = make([]Feed, len(feeds))
-	s.Meta.Pagination.Pages = episodes.Total / 24
+
+	pages := math.Ceil(float64(episodes.Total) / float64(options.PerPageOrDefault()))
+	s.Meta.Pagination.Pages = int(pages)
+	s.Meta.Pagination.Page = options.PageOrDefault()
+	s.Meta.Pagination.Limit = options.PerPageOrDefault()
 	s.Meta.Pagination.Total = episodes.Total
 
 	for i, episode := range episodes.Episodes {

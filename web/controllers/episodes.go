@@ -24,7 +24,7 @@ func (c *EpisoidesController) Index() error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, serializers.NewEpisodes(episodes, feeds))
+	return c.JSON(http.StatusOK, serializers.NewEpisodes(episodes, feeds, options))
 }
 
 func (c *EpisoidesController) Show() error {
@@ -37,7 +37,7 @@ func (c *EpisoidesController) Show() error {
 }
 
 func (c *EpisoidesController) Update() error {
-	if c.CurrentUser.Id == 0 {
+	if c.CurrentUser.IsAnonymous() {
 		c.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		return nil
 	}
@@ -72,7 +72,7 @@ func (c *EpisoidesController) Related() error {
 	}
 
 	episodes := datastore.Episodes{Episodes: related}
-	return c.JSON(http.StatusOK, serializers.NewEpisodes(episodes, feeds))
+	return c.JSON(http.StatusOK, serializers.NewEpisodes(episodes, feeds, datastore.EpisodeListOptions{}))
 }
 
 func (c *EpisoidesController) Listens() error {

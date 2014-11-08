@@ -46,7 +46,7 @@ func (c *HomeController) Index() error {
 }
 
 func (c *HomeController) manifest() (string, error) {
-	if c.CurrentUser.Id != 0 {
+	if !c.CurrentUser.IsAnonymous() {
 		m := newManifest(&c.CurrentUser)
 		b, err := json.Marshal(m)
 		if err != nil {

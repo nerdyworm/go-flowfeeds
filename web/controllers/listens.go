@@ -18,7 +18,7 @@ type ListenParams struct {
 }
 
 func (c *ListensController) Create() error {
-	if c.CurrentUser.Id == 0 {
+	if c.CurrentUser.IsAnonymous() {
 		return nil
 	}
 
