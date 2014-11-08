@@ -17,15 +17,15 @@ type ApplicationController struct {
 	CurrentUser models.User
 }
 
-func (c *ApplicationController) Init(rw http.ResponseWriter, r *http.Request) error {
-	c.Base.Init(rw, r)
+func (c *ApplicationController) Init(w http.ResponseWriter, r *http.Request) error {
+	c.Base.Init(w, r)
 	c.Store = datastore.NewDatastore()
 
 	var err error
 	c.CurrentUser, err = sessions.CurrentUser(r, c.Store)
 	if err != nil && err != sessions.NoCurrentUser {
 		log.Printf("ApplicationController#Init sessions.GetCurrentUser %v\n", err)
-		sessions.Signout(c.ResponseWriter, c.Request)
+		sessions.Signout(w, r)
 	}
 
 	return nil
