@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/codegangsta/cli"
 	"github.com/nerdyworm/go-flowfeeds/cmds/fake"
 	"github.com/nerdyworm/go-flowfeeds/cmds/update"
 	"github.com/nerdyworm/go-flowfeeds/config"
 	"github.com/nerdyworm/go-flowfeeds/datastore"
 	"github.com/nerdyworm/go-flowfeeds/web"
-	"github.com/codegangsta/cli"
 )
 
 func init() {
@@ -27,7 +27,7 @@ func main() {
 	app.Usage = "http server and utils"
 	app.Author = "Benjamin Silas Rhodes"
 	app.Email = "ben@nerdyworm.com"
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:        "update",
