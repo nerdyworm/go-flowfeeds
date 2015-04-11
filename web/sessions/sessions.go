@@ -6,9 +6,9 @@ import (
 
 	"github.com/gorilla/sessions"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/config"
-	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/config"
+	"github.com/nerdyworm/go-flowfeeds/datastore"
+	"github.com/nerdyworm/go-flowfeeds/models"
 )
 
 const (

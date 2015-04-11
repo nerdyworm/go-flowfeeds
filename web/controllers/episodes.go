@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/serializers"
+	"github.com/nerdyworm/go-flowfeeds/datastore"
+	"github.com/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/web/serializers"
 	"github.com/gorilla/mux"
 )
 

@@ -3,7 +3,7 @@ package datastore
 import (
 	"database/sql"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/models"
 	"github.com/lann/squirrel"
 )
 

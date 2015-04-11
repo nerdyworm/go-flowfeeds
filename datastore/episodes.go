@@ -5,7 +5,7 @@ import (
 
 	"github.com/lann/squirrel"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/models"
 )
 
 type EpisodesStore interface {

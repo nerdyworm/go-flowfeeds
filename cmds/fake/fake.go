@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/datastore"
+	"github.com/nerdyworm/go-flowfeeds/models"
 )
 
 var (

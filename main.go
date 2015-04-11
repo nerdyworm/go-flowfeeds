@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/cmds/fake"
-	"bitbucket.org/nerdyworm/go-flowfeeds/cmds/update"
-	"bitbucket.org/nerdyworm/go-flowfeeds/config"
-	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web"
+	"github.com/nerdyworm/go-flowfeeds/cmds/fake"
+	"github.com/nerdyworm/go-flowfeeds/cmds/update"
+	"github.com/nerdyworm/go-flowfeeds/config"
+	"github.com/nerdyworm/go-flowfeeds/datastore"
+	"github.com/nerdyworm/go-flowfeeds/web"
 	"github.com/codegangsta/cli"
 )
 

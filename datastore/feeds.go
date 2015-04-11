@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/models"
 	"github.com/lann/squirrel"
 )
 

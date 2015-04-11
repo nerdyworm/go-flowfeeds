@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/config"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/controllers"
+	"github.com/nerdyworm/go-flowfeeds/config"
+	"github.com/nerdyworm/go-flowfeeds/web/controllers"
 	"github.com/codegangsta/controller"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"

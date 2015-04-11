@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/serializers"
+	"github.com/nerdyworm/go-flowfeeds/web/serializers"
 	"github.com/gorilla/mux"
 )
 

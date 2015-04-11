@@ -1,6 +1,6 @@
 package datastore
 
-import "bitbucket.org/nerdyworm/go-flowfeeds/models"
+import "github.com/nerdyworm/go-flowfeeds/models"
 
 type ListensStore interface {
 	Create(*models.User, int64) (*models.Listen, error)

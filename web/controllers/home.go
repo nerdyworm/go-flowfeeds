@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/config"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/serializers"
+	"github.com/nerdyworm/go-flowfeeds/config"
+	"github.com/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/web/serializers"
 )
 
 type HomeController struct {

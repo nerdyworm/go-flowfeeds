@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/serializers"
-	"bitbucket.org/nerdyworm/go-flowfeeds/web/sessions"
+	"github.com/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/web/serializers"
+	"github.com/nerdyworm/go-flowfeeds/web/sessions"
 )
 
 type SessionsController struct {

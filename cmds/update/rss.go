@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"bitbucket.org/nerdyworm/go-flowfeeds/config"
-	"bitbucket.org/nerdyworm/go-flowfeeds/datastore"
-	"bitbucket.org/nerdyworm/go-flowfeeds/models"
-	"bitbucket.org/nerdyworm/go-flowfeeds/rss"
+	"github.com/nerdyworm/go-flowfeeds/config"
+	"github.com/nerdyworm/go-flowfeeds/datastore"
+	"github.com/nerdyworm/go-flowfeeds/models"
+	"github.com/nerdyworm/go-flowfeeds/rss"
 )
 
 type Fetcher interface {
